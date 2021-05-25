@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">f1dashboard</string>
+    <string name="listener_notification_channel">F1 Dashboard</string>
+    <string name="listener_notification_text">F1 Dashboard listen…</string>
+    <string name="listener_notification_stop_text">Stop</string>
+    <string name="lapCaption">lap</string>
+    <string name="fuelCaption">fuel</string>
+    <string name="ersCaption">ers</string>
+    <string name="pitCaption">pit</string>
+    <string name="drsCaption">drs</string>
+    <string name="bbCaption">BB</string>
+    <string name="diffCaption">diff</string>
+</resources>

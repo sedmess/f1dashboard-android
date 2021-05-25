@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_margin="16sp"
+            android:layout_weight="0.25">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="16sp">
+
+                <TextView
+                    android:id="@+id/lapCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lapCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize" />
+
+                <TextView
+                    android:id="@+id/lapValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+X"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="16sp">
+
+                <TextView
+                    android:id="@+id/fuelCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fuelCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+
+                <TextView
+                    android:id="@+id/fuelValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5sp"
+                    android:background="@color/inop"
+                    android:text="+X.XX"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="16sp">
+
+                <TextView
+                    android:id="@+id/ersCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ersCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+
+                <TextView
+                    android:id="@+id/ersValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/inop"
+                    android:text="X"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </TableRow>
+
+<!--            <TableRow-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_marginVertical="16sp">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/pitCaption"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="@string/pitCaption"-->
+<!--                    android:textAllCaps="true"-->
+<!--                    android:textColor="@color/white"-->
+<!--                    android:textSize="@dimen/fontSize"-->
+<!--                    android:typeface="normal" />-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/pitValue"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="X"-->
+<!--                    android:textAlignment="center"-->
+<!--                    android:textAllCaps="true"-->
+<!--                    android:textColor="@color/white"-->
+<!--                    android:textSize="@dimen/fontSize"-->
+<!--                    android:typeface="normal" />-->
+<!--            </TableRow>-->
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="16sp">
+
+                <TextView
+                    android:id="@+id/bbCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bbCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+
+                <TextView
+                    android:id="@+id/bbValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="X"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="16sp">
+
+                <TextView
+                    android:id="@+id/diffCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diffCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+
+                <TextView
+                    android:id="@+id/diffValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="X"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </TableRow>
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_margin="16sp"
+            android:layout_weight="0.5"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_gravity="top"
+                android:layout_margin="16sp"
+                android:layout_weight="0.25"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/recommendedGearValue"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2"
+                    android:textSize="@dimen/largeFontSize"
+                    android:text=""
+                    android:textColor="@color/leanMode"
+                    android:textAlignment="center"
+                    />
+
+                <TextView
+                    android:id="@+id/drsCaption"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16sp"
+                    android:layout_weight="0.3"
+                    android:text="@string/drsCaption"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textAlignment="textEnd"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+
+                <TextView
+                    android:id="@+id/drsValue"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16sp"
+                    android:layout_weight="0.5"
+                    android:text="-"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </LinearLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_gravity="center"
+                android:layout_weight="0.5">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@color/ahead">
+
+                    <TextView
+                        android:id="@+id/aheadDeltaValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:text="-X.XXX"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
+                    <TextView
+                        android:id="@+id/aheadTimeValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.5"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/myBestValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
+                    <TextView
+                        android:id="@+id/myTimeValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.5"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+                </TableRow>
+
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/behind">
+
+                    <TextView
+                        android:id="@+id/behindDeltaValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:text="+X.XXX"
+                        android:textAlignment="textStart"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
+                    <TextView
+                        android:id="@+id/behindTimeValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.5"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    >
+
+                    <TextView
+                        android:id="@+id/bestSessionTime"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.5"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/fastestText"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
+                </TableRow>
+
+            </TableLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_weight="0.25"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/sessionTimeValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/fontSize"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    />
+
+                <TextView
+                    android:id="@+id/debugFrameCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="X"
+                    android:textAlignment="center"
+                    android:textColor="@color/white" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_margin="16sp"
+            android:layout_weight="0.25"
+            android:orientation="vertical">
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_weight="0.4"
+                tools:ignore="NestedWeights">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="0.1">
+
+                    <TextView
+                        android:id="@+id/frontWingLeftDamage"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.50"
+                        android:layout_height="match_parent"
+                        android:background="@color/black"
+                        android:layout_margin="2sp"
+                        android:textSize="@dimen/fontSize"
+                        android:textColor="@color/white"
+                        android:textAlignment="center"
+                        />
+
+                    <TextView
+                        android:id="@+id/frontWingRightDamage"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.50"
+                        android:layout_height="match_parent"
+                        android:background="@color/black"
+                        android:layout_margin="2sp"
+                        android:textSize="@dimen/fontSize"
+                        android:textColor="@color/white"
+                        android:textAlignment="center"
+                        />
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="0.4">
+
+
+                    <TextView
+                        android:id="@+id/wearFLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.10"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/surfaceFLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/innerFLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/innerFRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/surfaceFRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/wearFRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.10"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="0.4">
+
+                    <TextView
+                        android:id="@+id/wearRLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.10"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/surfaceRLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/innerRLValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/innerRRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/surfaceRRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.20"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                    <TextView
+                        android:id="@+id/wearRRValue"
+                        android:layout_width="0dip"
+                        android:layout_weight="0.10"
+                        android:layout_height="match_parent"
+                        android:background="@color/inop"
+                        android:layout_margin="2sp"
+                        >
+                    </TextView>
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="0.1">
+
+                    <TextView
+                        android:id="@+id/rearWingDamage"
+                        android:layout_width="0dip"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:background="@color/black"
+                        android:layout_margin="2sp"
+                        android:textSize="@dimen/fontSize"
+                        android:textColor="@color/white"
+                        android:textAlignment="center"
+                        />
+
+                </TableRow>
+            </TableLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_weight="0.4"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/engineTempValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/inop"
+                    android:text="X"
+                    android:textAlignment="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/fontSize"
+                    android:typeface="normal" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
