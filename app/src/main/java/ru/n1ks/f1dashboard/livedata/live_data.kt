@@ -429,7 +429,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
             packet.asType<ParticipantDataPacket> {
                 var newData = data
-                if (data.ahead != null) {
+                if (data.ahead != null && data.ahead.id >= 0 && data.ahead.id < it.data.items.size) {
                     newData = data.copy(
                         ahead = data.ahead.copy(
                             driver = CompetitorDriver(
@@ -439,7 +439,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         )
                     )
                 }
-                if (data.behind != null) {
+                if (data.behind != null && data.behind.id >= 0 && data.behind.id < it.data.items.size) {
                     newData = newData.copy(
                         behind = data.behind.copy(
                             driver = CompetitorDriver(
