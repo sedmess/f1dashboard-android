@@ -1,7 +1,24 @@
 package ru.n1ks.f1dashboard.model
 
-enum class TyreCompound {
-    C1, C2, C3, C4, C5, Inter, Wet, DryClassic, WetClassic, SuperSoftF2, SoftF2, MediumF2, HardF2, WetF2, Soft, Medium, Hard;
+enum class TyreCompound(val shortValue: Char) {
+    X('X'),
+    C1('⑴'),
+    C2('⑵'),
+    C3('⑶'),
+    C4('⑷'),
+    C5('⑸'),
+    Inter('Ⓘ'),
+    Wet('Ⓦ'),
+    DryClassic('ⓓ'),
+    WetClassic('ⓦ'),
+    SuperSoftF2('Ⓠ'),
+    SoftF2('Ⓢ'),
+    MediumF2('Ⓜ'),
+    HardF2('Ⓗ'),
+    WetF2('Ⓦ'),
+    Soft('Ⓢ'),
+    Medium('Ⓜ'),
+    Hard('Ⓗ');
 
     @ExperimentalUnsignedTypes
     companion object {
@@ -20,7 +37,7 @@ enum class TyreCompound {
             13 -> MediumF2
             14 -> HardF2
             15 -> WetF2
-            else -> throw IllegalStateException("unknown code $code")
+            else -> X
         }
 
         fun defineVisualByCode(code: UByte) = when (code.toInt()) {
@@ -36,7 +53,7 @@ enum class TyreCompound {
             13 -> MediumF2
             14 -> HardF2
             15 -> WetF2
-            else -> throw IllegalStateException("unknown code $code")
+            else -> X
         }
     }
 }

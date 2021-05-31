@@ -14,6 +14,7 @@ import ru.n1ks.f1dashboard.model.*
 import ru.n1ks.f1dashboard.plusOne
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
 
 enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
@@ -32,9 +33,12 @@ data class Competitor(
     val lastLapTime: Float,
     val bestLapTime: Float,
     val lap: Int,
+    val tyreType: TyreCompound,
     val driver: CompetitorDriver?
-//    val tyreType: TyreCompound
-)
+) {
+
+    fun inBound(size: Int): Boolean = id in 0 until size
+}
 
 data class TyreState(
     val wear: Int,
@@ -123,7 +127,11 @@ private val fuelFormat: DecimalFormat = DecimalFormat("+#,#0.00;-#")
 private val timeFormatter: (Float) -> String = {
     val n1 = it.toInt() / 60
     val n2 = it % 60
-    "${n1}:${secondsAndMsFormat.format(n2)}"
+    if (n1 == 0 && n2.absoluteValue < 0.001f) {
+        "X:XX.XXX"
+    } else {
+        "${n1}:${secondsAndMsFormat.format(n2)}"
+    }
 }
 
 @ExperimentalUnsignedTypes
@@ -390,6 +398,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         { data, packet ->
             packet.asType<LapDataPacket> { it ->
                 val playerData = it.data.items[it.header.playerCarIndex]
+                val playerIndex = it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition }
                 val rivalAheadIndex =
                     it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.minusOne() }
                 val rivalAheadData = it.data.items.getOrNull(rivalAheadIndex)
@@ -398,11 +407,12 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 val rivalBehindData = it.data.items.getOrNull(rivalBehindIndex)
 
                 val player = Competitor(
-                    id = -1,
+                    id = playerIndex,
                     position = playerData.carPosition.toInt(),
                     lastLapTime = playerData.lastLapTime,
                     bestLapTime = playerData.bestLapTime,
                     lap = playerData.currentLapNum.toInt(),
+                    tyreType = data.player?.tyreType ?: TyreCompound.X,
                     driver = null
                 )
                 val ahead = rivalAheadData?.let {
@@ -412,6 +422,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
+                        tyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.tyreType else TyreCompound.X,
                         driver = if (data.ahead?.id == rivalAheadIndex) data.ahead.driver else null
                     )
                 }
@@ -422,6 +433,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
+                        tyreType = if (data.behind?.id == rivalBehindIndex) data.behind.tyreType else TyreCompound.X,
                         driver = if (data.behind?.id == rivalBehindIndex) data.behind.driver else null
                     )
                 }
@@ -429,7 +441,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
             packet.asType<ParticipantDataPacket> {
                 var newData = data
-                if (data.ahead != null && data.ahead.id >= 0 && data.ahead.id < it.data.items.size) {
+                if (data.ahead?.inBound(it.data.items.size) == true) {
                     newData = data.copy(
                         ahead = data.ahead.copy(
                             driver = CompetitorDriver(
@@ -439,13 +451,38 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         )
                     )
                 }
-                if (data.behind != null && data.behind.id >= 0 && data.behind.id < it.data.items.size) {
+                if (data.behind?.inBound(it.data.items.size) == true) {
                     newData = newData.copy(
                         behind = data.behind.copy(
                             driver = CompetitorDriver(
                                 it.data.items[data.behind.id].raceNumber.toInt(),
                                 it.data.items[data.behind.id].driver
                             )
+                        )
+                    )
+                }
+                return@LiveDataField newData
+            }
+            packet.asType<CarStatusDataPacket> {
+                var newData = data
+                if (data.player?.inBound(it.data.items.size) == true) {
+                    newData = data.copy(
+                        player = data.player.copy(
+                            tyreType = it.data.items[data.player.id].visualTyreCompound
+                        )
+                    )
+                }
+                if (data.ahead?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        ahead = data.ahead.copy(
+                            tyreType = it.data.items[data.ahead.id].visualTyreCompound
+                        )
+                    )
+                }
+                if (data.behind?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        behind = data.behind.copy(
+                            tyreType = it.data.items[data.behind.id].visualTyreCompound
                         )
                     )
                 }
@@ -460,7 +497,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             if (context.ahead != null && context.ahead.position > 0) {
                 aheadDeltaField.text =
                     context.ahead.position.toString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
-                aheadTimeField.text = timeFormatter(context.ahead.lastLapTime)
+                aheadTimeField.text =
+                    timeFormatter(context.ahead.lastLapTime) + context.ahead.tyreType.shortValue.let { " $it" }
 
                 when {
                     context.ahead.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> aheadTimeField.setTextColor(
@@ -472,8 +510,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     else -> aheadTimeField.setTextColor(getColor(R.color.white))
                 }
             } else {
-                aheadDeltaField.text = "X"
-                aheadTimeField.text = "X"
+                aheadDeltaField.text = "X:XX.XXX"
+                aheadTimeField.text = "X:XX.XXX"
                 aheadTimeField.setTextColor(getColor(R.color.white))
             }
 
@@ -482,7 +520,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
             if (context.player != null) {
                 playerBestTimeField.text = timeFormatter(context.player.bestLapTime)
-                playerLastTimeField.text = timeFormatter(context.player.lastLapTime)
+                playerLastTimeField.text = timeFormatter(context.player.lastLapTime) + context.player.tyreType.shortValue.let { " $it" }
 
                 if (context.player.lap < context.ahead?.lap ?: context.player.lap) {
                     playerLastTimeField.setTextColor(getColor(R.color.timeIrrelevant))
@@ -490,8 +528,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     playerLastTimeField.setTextColor(getColor(R.color.white))
                 }
             } else {
-                playerBestTimeField.text = "X"
-                playerLastTimeField.text = "X"
+                playerBestTimeField.text = "X:XX.XXX"
+                playerLastTimeField.text = "X:XX.XXX"
             }
 
             val behindDeltaField = findViewById(R.id.behindDeltaValue) as TextView
@@ -500,7 +538,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             if (context.behind != null) {
                 behindDeltaField.text =
                     context.behind.position.toString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
-                behindTimeField.text = timeFormatter(context.behind.lastLapTime)
+                behindTimeField.text = timeFormatter(context.behind.lastLapTime) + context.behind.tyreType.shortValue.let { " $it" }
 
                 if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
                     behindTimeField.setTextColor(getColor(R.color.timeIrrelevant))
@@ -516,8 +554,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     }
                 }
             } else {
-                behindDeltaField.text = "X"
-                behindTimeField.text = "X"
+                behindDeltaField.text = "X:XX.XXX"
+                behindTimeField.text = "X:XX.XXX"
                 behindTimeField.setTextColor(getColor(R.color.white))
             }
         }
