@@ -259,7 +259,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/aheadTimeValue"
@@ -272,7 +272,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/aheadTyreValue"
@@ -302,7 +302,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/myTimeValue"
@@ -315,7 +315,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/myTyreValue"
@@ -347,7 +347,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/behindTimeValue"
@@ -360,7 +360,7 @@
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/behindTyreValue"

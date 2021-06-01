@@ -38,6 +38,8 @@ data class Competitor(
 ) {
 
     fun inBound(size: Int): Boolean = id in 0 until size
+
+    fun positionString(): String = position.toString().padEnd(2, ' ')
 }
 
 data class TyreState(
@@ -497,7 +499,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
             if (context.ahead != null && context.ahead.position > 0) {
                 aheadDriverField.text =
-                    context.ahead.position.toString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    context.ahead.positionString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 aheadTimeField.text =
                     timeFormatter(context.ahead.lastLapTime)
 
@@ -514,7 +516,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 aheadTyreField.text = context.ahead.tyreType.char.toString()
                 aheadTyreField.setTextColor(getColor(context.ahead.tyreType.color))
             } else {
-                aheadDriverField.text = "X"
+                aheadDriverField.text = "XX"
                 aheadTimeField.text = "X:XX.XXX"
                 aheadTimeField.setTextColor(getColor(R.color.white))
                 aheadTyreField.text = "X"
@@ -550,7 +552,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
             if (context.behind != null) {
                 behindDriverField.text =
-                    context.behind.position.toString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    context.behind.positionString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 behindTimeField.text = timeFormatter(context.behind.lastLapTime)
 
                 if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
@@ -570,7 +572,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 behindTyreFiled.text = context.behind.tyreType.char.toString()
                 behindTyreFiled.setTextColor(getColor(context.behind.tyreType.color))
             } else {
-                behindDriverField.text = "X"
+                behindDriverField.text = "XX"
                 behindTimeField.text = "X:XX.XXX"
                 behindTimeField.setTextColor(getColor(R.color.white))
                 behindTyreFiled.text = "X"
