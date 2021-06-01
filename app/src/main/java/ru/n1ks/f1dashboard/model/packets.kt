@@ -575,3 +575,83 @@ class CarSetupData(
 class CarSetupDataPacket(
     val items: List<CarSetupData>
 ) : TelemetryData
+
+interface EventDetails {
+
+    enum class Type(private val code: String) {
+        SessionStarted("SSTA"),
+        SessionEnded("SEND"),
+        FastestLap("FTLP"),
+        Retirement("RTMT"),
+        DRSEnabled("DRSE"),
+        DRSDisabled("DRSD"),
+        TeammateInPits("TMPT"),
+        ChequeredFlag("CHQF"),
+        RaceWinner("RCWN"),
+        PenaltyIssued("PENA"),
+        SpeedTrap("SPTP"),
+        Empty("XXXX")
+        ;
+
+        companion object {
+
+            private val map = values().groupBy { it.code }.mapValues { it.value.first() }
+
+            fun getByCode(code: String): Type = map[code] ?: Empty
+        }
+    }
+}
+
+object EmptyEventData : EventDetails
+
+@ExperimentalUnsignedTypes
+class FastestLapData(
+/** Vehicle index of car achieving fastest lap */ val vehicleIdx: UByte,
+/** Lap time is in seconds */ val lapTime: Float
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class Retirement(
+/** Vehicle index of car retiring */ val vehicleIdx: UByte
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class TeamMateInPits(
+/** Vehicle index of team mate */ val vehicleIdx: UByte
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class RaceWinner(
+/** Vehicle index of the race winner */ val vehicleIdx: UByte
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class Penalty(
+/** Penalty type – see Appendices */ val penaltyType: UByte,
+/** Infringement type – see Appendices */ val infringementType: UByte,
+/** Vehicle index of the car the penalty is applied to */ val vehicleIdx: UByte,
+/** Vehicle index of the other car involved */ val otherVehicleIdx: UByte,
+/** Time gained, or time spent doing action in seconds */ val time: UByte,
+/** Lap the penalty occurred on */ val lapNum: UByte,
+/** Number of places gained by this */ val placesGained: UByte
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class SpeedTrap(
+/** Vehicle index of the vehicle triggering speed trap */ val vehicleIdx: UByte,
+/** Top speed achieved in kilometres per hour */ val speed: Float
+) : EventDetails
+
+@ExperimentalUnsignedTypes
+class EventDataPacket(
+    /** Event string code, see below */ val eventType: EventDetails.Type,
+    /** Event details - should be interpreted differently for each type */ val details: EventDetails
+) : TelemetryData {
+
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T : EventDetails> asType(block: (T) -> Unit) {
+        if (this.details is T) {
+            block(this.details)
+        }
+    }
+}

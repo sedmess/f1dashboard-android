@@ -16,6 +16,14 @@ import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 
+
+interface ViewProvider {
+
+    fun findViewById(id: Int): View
+    fun getDrawable(id: Int): Drawable
+    fun getColor(id: Int): Int
+}
+
 enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
 }
@@ -34,7 +42,7 @@ data class Competitor(
     val bestLapTime: Float,
     val lap: Int,
     val tyreType: TyreCompound,
-    val tyreAge: Int = -1,
+    val tyreAge: Int,
     val driver: CompetitorDriver?
 ) {
 
@@ -50,13 +58,6 @@ data class TyreState(
     val innerTemperature: Int,
     val outerTemperature: Int
 )
-
-interface ViewProvider {
-
-    fun findViewById(id: Int): View
-    fun getDrawable(id: Int): Drawable
-    fun getColor(id: Int): Int
-}
 
 @ExperimentalUnsignedTypes
 class LiveDataField<T>(
@@ -91,6 +92,13 @@ data class RivalsField(
     val ahead: Competitor?,
     val player: Competitor?,
     val behind: Competitor?
+)
+
+@ExperimentalUnsignedTypes
+data class BestLapField(
+    val competitorId: Int,
+    val driver: ParticipantData.Driver?,
+    val bestLapTime: Float
 )
 
 data class TypesField(
@@ -403,7 +411,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         { data, packet ->
             packet.asType<LapDataPacket> { it ->
                 val playerData = it.data.items[it.header.playerCarIndex]
-                val playerIndex = it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition }
+                val playerIndex =
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition }
                 val rivalAheadIndex =
                     it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.minusOne() }
                 val rivalAheadData = it.data.items.getOrNull(rivalAheadIndex)
@@ -524,7 +533,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
                 aheadTyreField.text = context.ahead.tyreType.char.toString()
                 aheadTyreField.setTextColor(getColor(context.ahead.tyreType.color))
-                aheadTyreField.background = if (context.ahead.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                aheadTyreField.background =
+                    if (context.ahead.isTyresNew()) getDrawable(R.color.tyreNew) else null
             } else {
                 aheadDriverField.text = "XX"
                 aheadTimeField.text = "X:XX.XXX"
@@ -550,7 +560,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
                 playerTyreField.text = context.player.tyreType.char.toString()
                 playerTyreField.setTextColor(getColor(context.player.tyreType.color))
-                playerTyreField.background = if (context.player.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                playerTyreField.background =
+                    if (context.player.isTyresNew()) getDrawable(R.color.tyreNew) else null
             } else {
                 playerBestTimeField.text = "X:XX.XXX"
                 playerLastTimeField.text = "X:XX.XXX"
@@ -584,7 +595,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
                 behindTyreFiled.text = context.behind.tyreType.char.toString()
                 behindTyreFiled.setTextColor(getColor(context.behind.tyreType.color))
-                behindTyreFiled.background = if (context.behind.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                behindTyreFiled.background =
+                    if (context.behind.isTyresNew()) getDrawable(R.color.tyreNew) else null
 
             } else {
                 behindDriverField.text = "XX"
@@ -598,16 +610,53 @@ val LiveDataFields = listOf<LiveDataField<*>>(
     ),
     LiveDataField(
         "bestTime",
-        0.0f,
+        BestLapField(
+            competitorId = -1,
+            driver = null,
+            bestLapTime = 0.0f
+        ),
         { data, packet ->
             packet.asType<LapDataPacket> {
-                return@LiveDataField it.data.items.filter { it.bestLapTime > 0 }
-                    .minOfOrNull { it.bestLapTime } ?: 0.0f
+                val bestLapTime = it.data.items.filter { it.bestLapTime > 0 }
+                    .minOfOrNull { it.bestLapTime }
+                if (bestLapTime != null && (data.competitorId == -1 || data.bestLapTime > bestLapTime)) {
+                    return@LiveDataField data.copy(
+                        competitorId = -1,
+                        driver = null,
+                        bestLapTime = it.data.items.filter { it.bestLapTime > 0 }
+                            .minOfOrNull { it.bestLapTime } ?: 0.0f
+                    )
+                }
+            }
+            packet.asType<EventDataPacket> {
+                if (it.data.eventType == EventDetails.Type.SessionStarted) {
+                    return@LiveDataField BestLapField(
+                        competitorId = -1,
+                        driver = null,
+                        bestLapTime = 0.0f
+                    )
+                }
+                it.data.asType<FastestLapData> { event ->
+                    val cid = event.vehicleIdx.toInt()
+                    return@LiveDataField data.copy(
+                        competitorId = cid,
+                        driver = if (data.competitorId == cid) data.driver else null,
+                        bestLapTime = event.lapTime
+                    )
+                }
+            }
+            packet.asType<ParticipantDataPacket> {
+                if (data.competitorId != -1) {
+                    return@LiveDataField data.copy(
+                        driver = it.data.items[data.competitorId].driver
+                    )
+                }
             }
             return@LiveDataField data
         },
         {
-            (findViewById(R.id.bestSessionTime) as TextView).text = timeFormatter(it)
+            (findViewById(R.id.bestSessionTime) as TextView).text =
+                timeFormatter(it.bestLapTime) + " " + (it.driver?.name ?: "")
         }
     ),
     LiveDataField(
