@@ -493,12 +493,13 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         { context ->
             val aheadDriverField = findViewById(R.id.aheadDriverValue) as TextView
             val aheadTimeField = findViewById(R.id.aheadTimeValue) as TextView
+            val aheadTyreField = findViewById(R.id.aheadTyreValue) as TextView
 
             if (context.ahead != null && context.ahead.position > 0) {
                 aheadDriverField.text =
                     context.ahead.position.toString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 aheadTimeField.text =
-                    timeFormatter(context.ahead.lastLapTime) + context.ahead.tyreType.shortValue.let { " $it" }
+                    timeFormatter(context.ahead.lastLapTime)
 
                 when {
                     context.ahead.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> aheadTimeField.setTextColor(
@@ -509,36 +510,48 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     )
                     else -> aheadTimeField.setTextColor(getColor(R.color.white))
                 }
+
+                aheadTyreField.text = context.ahead.tyreType.char.toString()
+                aheadTyreField.setTextColor(getColor(context.ahead.tyreType.color))
             } else {
                 aheadDriverField.text = "X"
                 aheadTimeField.text = "X:XX.XXX"
                 aheadTimeField.setTextColor(getColor(R.color.white))
+                aheadTyreField.text = "X"
+                aheadDriverField.setTextColor(getColor(R.color.white))
             }
 
             val playerBestTimeField = findViewById(R.id.myBestValue) as TextView
             val playerLastTimeField = findViewById(R.id.myTimeValue) as TextView
+            val playerTyreField = findViewById(R.id.myTyreValue) as TextView
 
             if (context.player != null) {
                 playerBestTimeField.text = timeFormatter(context.player.bestLapTime)
-                playerLastTimeField.text = timeFormatter(context.player.lastLapTime) + context.player.tyreType.shortValue.let { " $it" }
+                playerLastTimeField.text = timeFormatter(context.player.lastLapTime)
 
                 if (context.player.lap < context.ahead?.lap ?: context.player.lap) {
                     playerLastTimeField.setTextColor(getColor(R.color.timeIrrelevant))
                 } else {
                     playerLastTimeField.setTextColor(getColor(R.color.white))
                 }
+
+                playerTyreField.text = context.player.tyreType.char.toString()
+                playerTyreField.setTextColor(getColor(context.player.tyreType.color))
             } else {
                 playerBestTimeField.text = "X:XX.XXX"
                 playerLastTimeField.text = "X:XX.XXX"
+                playerTyreField.text = "X"
+                playerTyreField.setTextColor(getColor(R.color.white))
             }
 
             val behindDriverField = findViewById(R.id.behindDriverValue) as TextView
             val behindTimeField = findViewById(R.id.behindTimeValue) as TextView
+            val behindTyreFiled = findViewById(R.id.behindTyreValue) as TextView
 
             if (context.behind != null) {
                 behindDriverField.text =
                     context.behind.position.toString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
-                behindTimeField.text = timeFormatter(context.behind.lastLapTime) + context.behind.tyreType.shortValue.let { " $it" }
+                behindTimeField.text = timeFormatter(context.behind.lastLapTime)
 
                 if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
                     behindTimeField.setTextColor(getColor(R.color.timeIrrelevant))
@@ -553,10 +566,15 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         else -> behindTimeField.setTextColor(getColor(R.color.white))
                     }
                 }
+
+                behindTyreFiled.text = context.behind.tyreType.char.toString()
+                behindTyreFiled.setTextColor(getColor(context.behind.tyreType.color))
             } else {
                 behindDriverField.text = "X"
                 behindTimeField.text = "X:XX.XXX"
                 behindTimeField.setTextColor(getColor(R.color.white))
+                behindTyreFiled.text = "X"
+                behindTyreFiled.setTextColor(getColor(R.color.white))
             }
         }
     ),

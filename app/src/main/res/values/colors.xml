@@ -37,4 +37,12 @@
     <color name="timeIrrelevant">#BFBFBF</color>
     <color name="timeBetter">#AAFFAD</color>
     <color name="timeWorse">#FFA59E</color>
+    <color name="tyreInter">#FFFFFF</color>
+    <color name="tyreWet">#FFFFFF</color>
+    <color name="tyreDry">#FFFFFF</color>
+    <color name="tyreUS">#AA84FF</color>
+    <color name="tyreSS">#C62828</color>
+    <color name="tyreS">#F9EE25</color>
+    <color name="tyreM">#FFFFFF</color>
+    <color name="tyreH">#FF8F00</color>
 </resources>

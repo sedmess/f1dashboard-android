@@ -1,24 +1,27 @@
 package ru.n1ks.f1dashboard.model
 
-enum class TyreCompound(val shortValue: Char) {
-    X('X'),
-    C1('⑴'),
-    C2('⑵'),
-    C3('⑶'),
-    C4('⑷'),
-    C5('⑸'),
-    Inter('Ⓘ'),
-    Wet('Ⓦ'),
-    DryClassic('ⓓ'),
-    WetClassic('ⓦ'),
-    SuperSoftF2('Ⓠ'),
-    SoftF2('Ⓢ'),
-    MediumF2('Ⓜ'),
-    HardF2('Ⓗ'),
-    WetF2('Ⓦ'),
-    Soft('Ⓢ'),
-    Medium('Ⓜ'),
-    Hard('Ⓗ');
+import ru.n1ks.f1dashboard.R
+
+enum class TyreCompound(val char: Char, val color: Int) {
+    X('X', R.color.white),
+    C1('⑴', R.color.tyreH),
+    C2('⑵', R.color.tyreM),
+    C3('⑶', R.color.tyreS),
+    C4('⑷', R.color.tyreSS),
+    C5('⑸', R.color.tyreUS),
+    Inter('Ⓘ', R.color.tyreInter),
+    Wet('Ⓦ', R.color.tyreWet),
+    DryClassic('ⓓ', R.color.tyreDry),
+    WetClassic('ⓦ', R.color.tyreWet),
+    SuperSoftF2('Ⓠ', R.color.tyreSS),
+    SoftF2('Ⓢ', R.color.tyreS),
+    MediumF2('Ⓜ', R.color.tyreM),
+    HardF2('Ⓗ', R.color.tyreH),
+    WetF2('Ⓦ', R.color.tyreWet),
+    Soft('Ⓢ', R.color.tyreSS),
+    Medium('Ⓜ', R.color.tyreS),
+    Hard('Ⓗ', R.color.tyreM),
+    ;
 
     @ExperimentalUnsignedTypes
     companion object {
