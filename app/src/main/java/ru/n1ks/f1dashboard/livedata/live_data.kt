@@ -491,11 +491,11 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         { context ->
-            val aheadDeltaField = findViewById(R.id.aheadDeltaValue) as TextView
+            val aheadDriverField = findViewById(R.id.aheadDriverValue) as TextView
             val aheadTimeField = findViewById(R.id.aheadTimeValue) as TextView
 
             if (context.ahead != null && context.ahead.position > 0) {
-                aheadDeltaField.text =
+                aheadDriverField.text =
                     context.ahead.position.toString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 aheadTimeField.text =
                     timeFormatter(context.ahead.lastLapTime) + context.ahead.tyreType.shortValue.let { " $it" }
@@ -510,7 +510,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     else -> aheadTimeField.setTextColor(getColor(R.color.white))
                 }
             } else {
-                aheadDeltaField.text = "X:XX.XXX"
+                aheadDriverField.text = "X"
                 aheadTimeField.text = "X:XX.XXX"
                 aheadTimeField.setTextColor(getColor(R.color.white))
             }
@@ -532,11 +532,11 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 playerLastTimeField.text = "X:XX.XXX"
             }
 
-            val behindDeltaField = findViewById(R.id.behindDeltaValue) as TextView
+            val behindDriverField = findViewById(R.id.behindDriverValue) as TextView
             val behindTimeField = findViewById(R.id.behindTimeValue) as TextView
 
             if (context.behind != null) {
-                behindDeltaField.text =
+                behindDriverField.text =
                     context.behind.position.toString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 behindTimeField.text = timeFormatter(context.behind.lastLapTime) + context.behind.tyreType.shortValue.let { " $it" }
 
@@ -554,7 +554,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     }
                 }
             } else {
-                behindDeltaField.text = "X:XX.XXX"
+                behindDriverField.text = "X"
                 behindTimeField.text = "X:XX.XXX"
                 behindTimeField.setTextColor(getColor(R.color.white))
             }

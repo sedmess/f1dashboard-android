@@ -250,11 +250,11 @@
                     android:background="@color/ahead">
 
                     <TextView
-                        android:id="@+id/aheadDeltaValue"
+                        android:id="@+id/aheadDriverValue"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.5"
-                        android:text="-X.XXX"
+                        android:text="X"
                         android:textAlignment="textStart"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -312,11 +312,11 @@
                     android:background="@color/behind">
 
                     <TextView
-                        android:id="@+id/behindDeltaValue"
+                        android:id="@+id/behindDriverValue"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.5"
-                        android:text="+X.XXX"
+                        android:text="X"
                         android:textAlignment="textStart"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
