@@ -783,8 +783,10 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         0,
         { data, _ -> data + 1 },
         {
-            val debugField = findViewById(R.id.debugFrameCount) as TextView
-            debugField.text = it.toString()
+            if (it % 100 == 0) {
+                val debugField = findViewById(R.id.debugFrameCount) as TextView
+                debugField.text = it.toString()
+            }
         }
     )
 )
