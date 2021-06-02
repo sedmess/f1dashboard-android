@@ -8,10 +8,11 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.toSingle
+import ru.n1ks.f1dashboard.OneByte
 import ru.n1ks.f1dashboard.R
-import ru.n1ks.f1dashboard.minusOne
+import ru.n1ks.f1dashboard.minusByte
 import ru.n1ks.f1dashboard.model.*
-import ru.n1ks.f1dashboard.plusOne
+import ru.n1ks.f1dashboard.plusByte
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
@@ -28,13 +29,11 @@ enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
 }
 
-@ExperimentalUnsignedTypes
 data class CompetitorDriver(
     val code: Int,
     val driver: ParticipantData.Driver
 )
 
-@ExperimentalUnsignedTypes
 data class Competitor(
     val id: Int,
     val position: Int,
@@ -59,7 +58,6 @@ data class TyreState(
     val outerTemperature: Int
 )
 
-@ExperimentalUnsignedTypes
 class LiveDataField<T>(
     val name: String,
     private var data: T,
@@ -87,14 +85,12 @@ data class DrsField(
     val isOpened: Boolean
 )
 
-@ExperimentalUnsignedTypes
 data class RivalsField(
     val ahead: Competitor?,
     val player: Competitor?,
     val behind: Competitor?
 )
 
-@ExperimentalUnsignedTypes
 data class BestLapField(
     val competitorId: Int,
     val driver: ParticipantData.Driver?,
@@ -147,7 +143,6 @@ private val timeFormatter: (Float) -> String = {
     }
 }
 
-@ExperimentalUnsignedTypes
 class LiveData(
     private val activity: Activity,
     private val fields: Collection<LiveDataField<*>>
@@ -182,7 +177,6 @@ class LiveData(
 }
 
 @SuppressLint("SetTextI18n")
-@ExperimentalUnsignedTypes
 val LiveDataFields = listOf<LiveDataField<*>>(
     LiveDataField(
         "lapRemaining",
@@ -414,10 +408,10 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 val playerIndex =
                     it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition }
                 val rivalAheadIndex =
-                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.minusOne() }
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition minusByte OneByte }
                 val rivalAheadData = it.data.items.getOrNull(rivalAheadIndex)
                 val rivalBehindIndex =
-                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.plusOne() }
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition plusByte OneByte }
                 val rivalBehindData = it.data.items.getOrNull(rivalBehindIndex)
 
                 val player = Competitor(

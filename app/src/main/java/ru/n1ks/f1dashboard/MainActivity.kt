@@ -20,7 +20,6 @@ import ru.n1ks.f1dashboard.livedata.LiveData
 import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import java.util.concurrent.TimeUnit
 
-@ExperimentalUnsignedTypes
 class MainActivity : AppCompatActivity() {
 
     companion object {

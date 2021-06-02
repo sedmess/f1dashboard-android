@@ -1,38 +1,35 @@
 package ru.n1ks.f1dashboard.model
 
-import ru.n1ks.f1dashboard.UByteOne
+import ru.n1ks.f1dashboard.OneByte
 
 interface TelemetryData
 
-@ExperimentalUnsignedTypes
-enum class PackageType(val id: UByte) {
-    MotionType(0u),
-    SessionType(1u),
-    LapDataType(2u),
-    EventType(3u),
-    ParticipantsType(4u),
-    CarSetupsType(5u),
-    CarTelemetryType(6u),
-    CarStatusType(7u),
-    FinalClassificationType(8u),
-    LobbyInfoType(9u)
+enum class PackageType(val id: Byte) {
+    MotionType(0),
+    SessionType(1),
+    LapDataType(2),
+    EventType(3),
+    ParticipantsType(4),
+    CarSetupsType(5),
+    CarTelemetryType(6),
+    CarStatusType(7),
+    FinalClassificationType(8),
+    LobbyInfoType(9)
 }
 
-@ExperimentalUnsignedTypes
 data class TelemetryHeader(
-    val packetFormat: UShort,
-    val gameMajorVersion: UByte,
-    val gameMinorVersion: UByte,
-    val packetVersion: UByte,
-    val packetTypeId: UByte,
-    val sessionId: ULong,
+    val packetFormat: Short,
+    val gameMajorVersion: Byte,
+    val gameMinorVersion: Byte,
+    val packetVersion: Byte,
+    val packetTypeId: Byte,
+    val sessionId: Long,
     val sessionTimestamp: Float,
-    val frameId: UInt,
+    val frameId: Int,
     val playerCarIndex: Int,
-    val secondaryPlayerCarIndex: UByte
+    val secondaryPlayerCarIndex: Byte
 )
 
-@ExperimentalUnsignedTypes
 data class TelemetryPacket<T : TelemetryData>(
     val header: TelemetryHeader,
     val data: T
@@ -48,10 +45,9 @@ data class TelemetryPacket<T : TelemetryData>(
 
 object EmptyData : TelemetryData
 
-@ExperimentalUnsignedTypes
 class CarTelemetryData(
     /**  Speed of car in kilometres per hour */
-    val speed: UShort,
+    val speed: Short,
     /**  Amount of throttle applied (0.0 to 1.0) */
     val throttle: Float,
     /**  Steering (-1.0 (full lock left) to 1.0 (full lock right)) */
@@ -59,42 +55,42 @@ class CarTelemetryData(
     /**  Amount of brake applied (0.0 to 1.0) */
     val brake: Float,
     /**  Amount of clutch applied (0 to 100) */
-    val clutch: UByte,
+    val clutch: Byte,
     /**  Gear selected (1-8, N=0, R=-1) */
     val gear: Byte,
     /**  Engine RPM */
-    val engineRPM: UShort,
+    val engineRPM: Short,
     /**  0 = off, 1 = on */
-    private val _drs: UByte,
+    private val _drs: Byte,
     /**  Rev lights indicator (percentage) */
-    val revLightsPercent: UByte,
+    val revLightsPercent: Byte,
     /**  Brakes temperature (celsius) */
-    private val _brakesTemperature: Array<UShort>,
+    private val _brakesTemperature: Array<Short>,
     /**  Tyres surface temperature (celsius) */
-    private val _tyresSurfaceTemperature: Array<UByte>,
+    private val _tyresSurfaceTemperature: Array<Byte>,
     /**  Tyres inner temperature (celsius) */
-    private val _tyresInnerTemperature: Array<UByte>,
+    private val _tyresInnerTemperature: Array<Byte>,
     /**  Engine temperature (celsius) */
-    val engineTemperature: UShort,
+    val engineTemperature: Short,
     /**  Tyres pressure (PSI) */
     private val _tyresPressure: Array<Float>,
     /**  Driving surface, see appendices */
-    private val _surfaceType: Array<UByte>
+    private val _surfaceType: Array<Byte>
 ) {
 
     val drs: Boolean
-        get() = _drs == UByteOne
+        get() = _drs == OneByte
 
-    val brakesTemperatureRL: UShort
+    val brakesTemperatureRL: Short
         get() = _brakesTemperature[0]
 
-    val brakesTemperatureRR: UShort
+    val brakesTemperatureRR: Short
         get() = _brakesTemperature[1]
 
-    val brakesTemperatureFL: UShort
+    val brakesTemperatureFL: Short
         get() = _brakesTemperature[2]
 
-    val brakesTemperatureFR: UShort
+    val brakesTemperatureFR: Short
         get() = _brakesTemperature[3]
 
     val tyresSurfaceTemperatureRL: Int
@@ -133,65 +129,63 @@ class CarTelemetryData(
     val tyresPressureFR: Float
         get() = _tyresPressure[3]
 
-    val surfaceTypeRL: UByte
+    val surfaceTypeRL: Byte
         get() = _surfaceType[0]
 
-    val surfaceTypeRR: UByte
+    val surfaceTypeRR: Byte
         get() = _surfaceType[1]
 
-    val surfaceTypeFL: UByte
+    val surfaceTypeFL: Byte
         get() = _surfaceType[2]
 
-    val surfaceTypeFR: UByte
+    val surfaceTypeFR: Byte
         get() = _surfaceType[3]
 
 }
 
-@ExperimentalUnsignedTypes
 class CarTelemetryDataPacket(
     val items: List<CarTelemetryData>,
     /**  Bit flags specifying which buttons are being pressed, currently - see appendices */
-    val buttonStatus: UInt,
+    val buttonStatus: Int,
     /**  Index of MFD panel open - 255 = MFD closed: Single player, race – 0 = Car setup, 1 = Pits, 2 = Damage, 3 =  Engine, 4 = Temperatures. May vary depending on game mode */
-    val mfdPanelIndex: UByte,
+    val mfdPanelIndex: Byte,
     /**  See above */
-    val mfdPanelIndexSecondaryPlayer: UByte,
+    val mfdPanelIndexSecondaryPlayer: Byte,
     /**  Suggested gear for the player (1-8), 0 if no gear suggested */
-    val suggestedGear: UByte
+    val suggestedGear: Byte
 ) : TelemetryData
 
-@ExperimentalUnsignedTypes
 class LapData(
     /**  Last lap time in seconds */
     val lastLapTime: Float,
     /**  Current time around the lap in seconds */
     val currentLapTime: Float,
     /**  Sector 1 time in milliseconds */
-    val sector1TimeInMS: UShort,
+    val sector1TimeInMS: Short,
     /**  Sector 2 time in milliseconds */
-    val sector2TimeInMS: UShort,
+    val sector2TimeInMS: Short,
     /**  Best lap time of the session in seconds */
     val bestLapTime: Float,
     /**  Lap number best time achieved on */
-    val bestLapNum: UByte,
+    val bestLapNum: Byte,
     /**  Sector 1 time of best lap in the session in milliseconds */
-    val bestLapSector1TimeInMS: UShort,
+    val bestLapSector1TimeInMS: Short,
     /**  Sector 2 time of best lap in the session in milliseconds */
-    val bestLapSector2TimeInMS: UShort,
+    val bestLapSector2TimeInMS: Short,
     /**  Sector 3 time of best lap in the session in milliseconds */
-    val bestLapSector3TimeInMS: UShort,
+    val bestLapSector3TimeInMS: Short,
     /**  Best overall sector 1 time of the session in milliseconds */
-    val bestOverallSector1TimeInMS: UShort,
+    val bestOverallSector1TimeInMS: Short,
     /**  Lap number best overall sector 1 time achieved on */
-    val bestOverallSector1LapNum: UByte,
+    val bestOverallSector1LapNum: Byte,
     /**  Best overall sector 2 time of the session in milliseconds */
-    val bestOverallSector2TimeInMS: UShort,
+    val bestOverallSector2TimeInMS: Short,
     /**  Lap number best overall sector 2 time achieved on */
-    val bestOverallSector2LapNum: UByte,
+    val bestOverallSector2LapNum: Byte,
     /**  Best overall sector 3 time of the session in milliseconds */
-    val bestOverallSector3TimeInMS: UShort,
+    val bestOverallSector3TimeInMS: Short,
     /**  Lap number best overall sector 3 time achieved on */
-    val bestOverallSector3LapNum: UByte,
+    val bestOverallSector3LapNum: Byte,
     /**  Distance vehicle is around current lap in metres – could be negative if line hasn’t been crossed yet */
     val lapDistance: Float,
     /**  Total distance travelled in session in metres – could be negative if line hasn’t been crossed yet */
@@ -199,23 +193,23 @@ class LapData(
     /**  Delta in seconds for safety car */
     val safetyCarDelta: Float,
     /**  Car race position */
-    val carPosition: UByte,
+    val carPosition: Byte,
     /**  Current lap number */
-    val currentLapNum: UByte,
+    val currentLapNum: Byte,
     /**  0 = none, 1 = pitting, 2 = in pit area */
-    private val _pitStatus: UByte,
+    private val _pitStatus: Byte,
     /**  0 = sector1, 1 = sector2, 2 = sector3 */
-    val sector: UByte,
+    val sector: Byte,
     /**  Current lap invalid - 0 = valid, 1 = invalid */
-    private val _currentLapInvalid: UByte,
+    private val _currentLapInvalid: Byte,
     /**  Accumulated time penalties in seconds to be added */
-    val penalties: UByte,
+    val penalties: Byte,
     /**  Grid position the vehicle started the race in */
-    val gridPosition: UByte,
+    val gridPosition: Byte,
     /**  Status of driver - 0 = in garage, 1 = flying lap 2 = in lap, 3 = out lap, 4 = on track */
-    private val _driverStatus: UByte,
+    private val _driverStatus: Byte,
     /**  Result status - 0 = invalid, 1 = inactive, 2 = active 3 = finished, 4 = disqualified, 5 = not classified 6 = retired */
-    private val _resultStatus: UByte
+    private val _resultStatus: Byte
 ) {
 
     enum class PitStatus {
@@ -239,7 +233,7 @@ class LapData(
         }
 
     val currentLapInvalid: Boolean
-        get() = _currentLapInvalid != UByte.MIN_VALUE
+        get() = _currentLapInvalid != Byte.MIN_VALUE
 
     val driverStatus: DriverStatus
         get() = when (_driverStatus.toInt()) {
@@ -264,23 +258,21 @@ class LapData(
         }
 }
 
-@ExperimentalUnsignedTypes
 class LapDataPacket(
     val items: List<LapData>
 ) : TelemetryData
 
-@ExperimentalUnsignedTypes
 class CarStatusData(
     /**  0 (off) - 2 (high) */
-    val tractionControl: UByte,
+    val tractionControl: Byte,
     /**  0 (off) - 1 (on) */
-    val antiLockBrakes: UByte,
+    val antiLockBrakes: Byte,
     /**  Fuel mix - 0 = lean, 1 = standard, 2 = rich, 3 = max */
-    private val _fuelMix: UByte,
+    private val _fuelMix: Byte,
     /**  Front brake bias (percentage) */
-    val frontBrakeBias: UByte,
+    val frontBrakeBias: Byte,
     /**  Pit limiter status - 0 = off, 1 = on */
-    private val _pitLimiterStatus: UByte,
+    private val _pitLimiterStatus: Byte,
     /**  Current fuel mass */
     val fuelInTank: Float,
     /**  Fuel capacity */
@@ -288,43 +280,43 @@ class CarStatusData(
     /**  Fuel remaining in terms of laps (value on MFD) */
     val fuelRemainingLaps: Float,
     /**  Cars max RPM, point of rev limiter */
-    val maxRPM: UShort,
+    val maxRPM: Short,
     /**  Cars idle RPM */
-    val idleRPM: UShort,
+    val idleRPM: Short,
     /**  Maximum number of gears */
-    val maxGears: UByte,
+    val maxGears: Byte,
     /**  0 = not allowed, 1 = allowed, -1 = unknown */
-    private val _drsAllowed: UByte,
-    /**  0 = DRS not available, non-zero - DRS will be available in [X] metres */
-    val drsActivationDistance: UShort,
+    private val _drsAllowed: Byte,
+    /**  0 = DRS not available, non-zero - DRS will be available in X metres */
+    val drsActivationDistance: Short,
     /**  Tyre wear percentage */
-    private val _tyresWear: Array<UByte>,
+    private val _tyresWear: Array<Byte>,
     /**  F1 Modern - 16 = C5, 17 = C4, 18 = C3, 19 = C2, 20 = C1 7 = inter, 8 = wet F1 Classic - 9 = dry, 10 = wet F2 – 11 = super soft, 12 = soft, 13 = medium, 14 = hard 15 = wet */
-    private val _actualTyreCompound: UByte,
+    private val _actualTyreCompound: Byte,
     /**  F1 visual (can be different from actual compound) 16 = soft, 17 = medium, 18 = hard, 7 = inter, 8 = wet F1 Classic – same as above F2 – same as above */
-    private val _visualTyreCompound: UByte,
+    private val _visualTyreCompound: Byte,
     /**  Age in laps of the current set of tyres */
-    val tyresAgeLaps: UByte,
+    val tyresAgeLaps: Byte,
     /**  Tyre damage (percentage) */
-    private val _tyresDamage: Array<UByte>,
+    private val _tyresDamage: Array<Byte>,
     /**  Front left wing damage (percentage) */
-    val frontLeftWingDamage: UByte,
+    val frontLeftWingDamage: Byte,
     /**  Front right wing damage (percentage) */
-    val frontRightWingDamage: UByte,
+    val frontRightWingDamage: Byte,
     /**  Rear wing damage (percentage) */
-    val rearWingDamage: UByte,
+    val rearWingDamage: Byte,
     /**  Indicator for DRS fault, 0 = OK, 1 = fault */
-    private val _drsFault: UByte,
+    private val _drsFault: Byte,
     /**  Engine damage (percentage) */
-    val engineDamage: UByte,
+    val engineDamage: Byte,
     /**  Gear box damage (percentage) */
-    val gearBoxDamage: UByte,
+    val gearBoxDamage: Byte,
     /**  -1 = invalid/unknown, 0 = none, 1 = green 2 = blue, 3 = yellow, 4 = red */
     private val _vehicleFiaFlags: Byte,
     /**  ERS energy store in Joules */
     val ersStoreEnergy: Float,
     /**  ERS deployment mode, 0 = none, 1 = medium 2 = overtake, 3 = hotlap */
-    val ersDeployMode: UByte,
+    val ersDeployMode: Byte,
     /**  ERS energy harvested this lap by MGU-K */
     val ersHarvestedThisLapMGUK: Float,
     /**  ERS energy harvested this lap by MGU-H */
@@ -338,16 +330,16 @@ class CarStatusData(
     }
 
     val fuelMix: Int
-        get() = (_fuelMix + UByteOne).toInt()
+        get() = (_fuelMix + OneByte).toInt()
 
     val pitLimiter: Boolean
-        get() = _pitLimiterStatus == UByteOne
+        get() = _pitLimiterStatus == OneByte
 
     val drsAllowed: Boolean
-        get() = _drsAllowed == UByteOne
+        get() = _drsAllowed == OneByte
 
     val drsAvailable: Boolean
-        get() = drsActivationDistance > 0u
+        get() = drsActivationDistance > 0
 
     val tyresWearRL: Int
         get() = _tyresWear[0].toInt()
@@ -367,20 +359,20 @@ class CarStatusData(
     val visualTyreCompound: TyreCompound
         get() = TyreCompound.defineVisualByCode(_visualTyreCompound)
 
-    val tyresDamageRL: UByte
+    val tyresDamageRL: Byte
         get() = _tyresDamage[0]
 
-    val tyresDamageRR: UByte
+    val tyresDamageRR: Byte
         get() = _tyresDamage[1]
 
-    val tyresDamageFL: UByte
+    val tyresDamageFL: Byte
         get() = _tyresDamage[2]
 
-    val tyresDamageFR: UByte
+    val tyresDamageFR: Byte
         get() = _tyresDamage[3]
 
     val drsFault: Boolean
-        get() = _drsFault == UByteOne
+        get() = _drsFault == OneByte
 
     val fiaFlag: FiaFlag
         get() = when (_vehicleFiaFlags.toInt()) {
@@ -394,7 +386,6 @@ class CarStatusData(
         }
 }
 
-@ExperimentalUnsignedTypes
 class CarStatusDataPacket(
     val items: List<CarStatusData>
 ) : TelemetryData
@@ -406,78 +397,75 @@ class MarshalZone(
     val zoneFlag: Byte
 )
 
-@ExperimentalUnsignedTypes
 class WeatherForecastSample(
     /**  0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2  12 = Time Trial */
-    val sessionType: UByte,
+    val sessionType: Byte,
     /**  Time in minutes the forecast is for */
-    val timeOffset: UByte,
+    val timeOffset: Byte,
     /**  Weather - 0 = clear, 1 = light cloud, 2 = overcast 3 = light rain, 4 = heavy rain, 5 = storm */
-    val weather: UByte,
+    val weather: Byte,
     /**  Track temp. in degrees celsius */
     val trackTemperature: Byte,
     /**  Air temp. in degrees celsius */
     val airTemperature: Byte
 )
 
-@ExperimentalUnsignedTypes
 class SessionDataPacket(
     /**  Weather - 0 = clear, 1 = light cloud, 2 = overcast 3 = light rain, 4 = heavy rain, 5 = storm */
-    val weather: UByte,
+    val weather: Byte,
     /**  Track temp. in degrees celsius */
-    val trackTemperature: UByte,
+    val trackTemperature: Byte,
     /**  Air temp. in degrees celsius */
     val airTemperature: Byte,
     /**  Total number of laps in this race */
-    val totalLaps: UByte,
+    val totalLaps: Byte,
     /**  Track length in metres */
-    val trackLength: UShort,
+    val trackLength: Short,
     /**  0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ 10 = R, 11 = R2, 12 = Time Trial */
-    val sessionType: UByte,
+    val sessionType: Byte,
     /**  -1 for unknown, 0-21 for tracks, see appendix */
     val trackId: Byte,
     /**  Formula, 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic */
-    val formula: UByte,
+    val formula: Byte,
     /**  Time left in session in seconds */
-    val sessionTimeLeft: UShort,
+    val sessionTimeLeft: Short,
     /**  Session duration in seconds */
-    val sessionDuration: UShort,
+    val sessionDuration: Short,
     /**  Pit speed limit in kilometres per hour */
-    val pitSpeedLimit: UByte,
+    val pitSpeedLimit: Byte,
     /**  Whether the game is paused */
-    val gamePaused: UByte,
+    val gamePaused: Byte,
     /**  Whether the player is spectating */
-    val isSpectating: UByte,
+    val isSpectating: Byte,
     /**  Index of the car being spectated */
-    val spectatorCarIndex: UByte,
+    val spectatorCarIndex: Byte,
     /**  SLI Pro support, 0 = inactive, 1 = active */
-    val sliProNativeSupport: UByte
+    val sliProNativeSupport: Byte
 //    /**  Number of marshal zones to follow */
-//    val numMarshalZones: UByte,
+//    val numMarshalZones: Byte,
 //    /**  List of marshal zones – max 21 */
 //    val marshalZones: Array<MarshalZone>,
 //    /**  0 = no safety car, 1 = full safety car 2 = virtual safety car */
-//    val safetyCarStatus: UByte,
+//    val safetyCarStatus: Byte,
 //    /**  0 = offline, 1 = online */
-//    val networkGame: UByte,
+//    val networkGame: Byte,
 //    /**  Number of weather samples to follow */
-//    val numWeatherForecastSamples: UByte,
+//    val numWeatherForecastSamples: Byte,
 //    /**  Array of weather forecast samples */
 //    val weatherForecastSamples: Array<WeatherForecastSample>
 ) : TelemetryData
 
-@ExperimentalUnsignedTypes
 class ParticipantData(
     /**  Whether the vehicle is AI (1) or Human (0) controlled */
-    val aiControlled: UByte,
+    val aiControlled: Byte,
     /**  Driver id - see appendix */
-    private val _driverId: UByte,
+    private val _driverId: Byte,
     /**  Team id - see appendix */
-    val teamId: UByte,
+    val teamId: Byte,
     /**  Race number of the car */
-    val raceNumber: UByte,
+    val raceNumber: Byte,
     /**  Nationality of the driver */
-    val nationality: UByte
+    val nationality: Byte
 ) {
 
     enum class Driver(private val id: Int) {
@@ -540,38 +528,35 @@ class ParticipantData(
         get() = Driver.getById(_driverId.toInt())
 }
 
-@ExperimentalUnsignedTypes
 class ParticipantDataPacket(
     val items: List<ParticipantData>
 ) : TelemetryData
 
-@ExperimentalUnsignedTypes
 class CarSetupData(
-/**  Front wing aero */ val frontWing: UByte,
-/**  Rear wing aero */ val rearWing: UByte,
-/**  Differential adjustment on throttle (percentage) */ val onThrottle: UByte,
-/**  Differential adjustment off throttle (percentage) */ val offThrottle: UByte,
+/**  Front wing aero */ val frontWing: Byte,
+/**  Rear wing aero */ val rearWing: Byte,
+/**  Differential adjustment on throttle (percentage) */ val onThrottle: Byte,
+/**  Differential adjustment off throttle (percentage) */ val offThrottle: Byte,
 /**  Front camber angle (suspension geometry) */ val frontCamber: Float,
 /**  Rear camber angle (suspension geometry) */ val rearCamber: Float,
 /**  Front toe angle (suspension geometry) */ val frontToe: Float,
 /**  Rear toe angle (suspension geometry) */ val rearToe: Float,
-/**  Front suspension */ val frontSuspension: UByte,
-/**  Rear suspension */ val rearSuspension: UByte,
-/**  Front anti-roll bar */ val frontAntiRollBar: UByte,
-/**  Front anti-roll bar */ val rearAntiRollBar: UByte,
-/**  Front ride height */ val frontSuspensionHeight: UByte,
-/**  Rear ride height */ val rearSuspensionHeight: UByte,
-/**  Brake pressure (percentage) */ val brakePressure: UByte,
-/**  Brake bias (percentage) */ val brakeBias: UByte,
+/**  Front suspension */ val frontSuspension: Byte,
+/**  Rear suspension */ val rearSuspension: Byte,
+/**  Front anti-roll bar */ val frontAntiRollBar: Byte,
+/**  Front anti-roll bar */ val rearAntiRollBar: Byte,
+/**  Front ride height */ val frontSuspensionHeight: Byte,
+/**  Rear ride height */ val rearSuspensionHeight: Byte,
+/**  Brake pressure (percentage) */ val brakePressure: Byte,
+/**  Brake bias (percentage) */ val brakeBias: Byte,
 /**  Rear left tyre pressure (PSI) */ val rearLeftTyrePressure: Float,
 /**  Rear right tyre pressure (PSI) */ val rearRightTyrePressure: Float,
 /**  Front left tyre pressure (PSI) */ val frontLeftTyrePressure: Float,
 /**  Front right tyre pressure (PSI) */ val frontRightTyrePressure: Float,
-/**  Ballast */ val ballast: UByte,
+/**  Ballast */ val ballast: Byte,
 /**  Fuel load */ val fuelLoad: Float
 )
 
-@ExperimentalUnsignedTypes
 class CarSetupDataPacket(
     val items: List<CarSetupData>
 ) : TelemetryData
@@ -604,45 +589,38 @@ interface EventDetails {
 
 object EmptyEventData : EventDetails
 
-@ExperimentalUnsignedTypes
 class FastestLapData(
-/** Vehicle index of car achieving fastest lap */ val vehicleIdx: UByte,
+/** Vehicle index of car achieving fastest lap */ val vehicleIdx: Byte,
 /** Lap time is in seconds */ val lapTime: Float
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class Retirement(
-/** Vehicle index of car retiring */ val vehicleIdx: UByte
+/** Vehicle index of car retiring */ val vehicleIdx: Byte
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class TeamMateInPits(
-/** Vehicle index of team mate */ val vehicleIdx: UByte
+/** Vehicle index of team mate */ val vehicleIdx: Byte
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class RaceWinner(
-/** Vehicle index of the race winner */ val vehicleIdx: UByte
+/** Vehicle index of the race winner */ val vehicleIdx: Byte
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class Penalty(
-/** Penalty type – see Appendices */ val penaltyType: UByte,
-/** Infringement type – see Appendices */ val infringementType: UByte,
-/** Vehicle index of the car the penalty is applied to */ val vehicleIdx: UByte,
-/** Vehicle index of the other car involved */ val otherVehicleIdx: UByte,
-/** Time gained, or time spent doing action in seconds */ val time: UByte,
-/** Lap the penalty occurred on */ val lapNum: UByte,
-/** Number of places gained by this */ val placesGained: UByte
+/** Penalty type – see Appendices */ val penaltyType: Byte,
+/** Infringement type – see Appendices */ val infringementType: Byte,
+/** Vehicle index of the car the penalty is applied to */ val vehicleIdx: Byte,
+/** Vehicle index of the other car involved */ val otherVehicleIdx: Byte,
+/** Time gained, or time spent doing action in seconds */ val time: Byte,
+/** Lap the penalty occurred on */ val lapNum: Byte,
+/** Number of places gained by this */ val placesGained: Byte
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class SpeedTrap(
-/** Vehicle index of the vehicle triggering speed trap */ val vehicleIdx: UByte,
+/** Vehicle index of the vehicle triggering speed trap */ val vehicleIdx: Byte,
 /** Top speed achieved in kilometres per hour */ val speed: Float
 ) : EventDetails
 
-@ExperimentalUnsignedTypes
 class EventDataPacket(
     /** Event string code, see below */ val eventType: EventDetails.Type,
     /** Event details - should be interpreted differently for each type */ val details: EventDetails

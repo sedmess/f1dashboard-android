@@ -1,10 +1,7 @@
 package ru.n1ks.f1dashboard
 
-@ExperimentalUnsignedTypes
-internal val UByteOne = 1.toUByte()
+internal const val OneByte = 1.toByte()
 
-@ExperimentalUnsignedTypes
-internal fun UByte.plusOne() = this.plus(UByteOne).toUByte()
+internal infix fun Byte.plusByte(increment: Byte): Byte = this.plus(increment).toByte()
 
-@ExperimentalUnsignedTypes
-internal fun UByte.minusOne() = this.minus(UByteOne).toUByte()
+internal infix fun Byte.minusByte(decrement: Byte): Byte = this.minus(decrement).toByte()

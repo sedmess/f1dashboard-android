@@ -3,7 +3,6 @@ package ru.n1ks.f1dashboard.model
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-@ExperimentalUnsignedTypes
 object TelemetryPacketDeserializer {
 
     private const val CarCount = 22
@@ -42,48 +41,48 @@ object TelemetryPacketDeserializer {
 
     private fun mapHeader(buffer: ByteBuffer): TelemetryHeader =
         TelemetryHeader(
-            packetFormat = buffer.short.toUShort(),
-            gameMajorVersion = buffer.get().toUByte(),
-            gameMinorVersion = buffer.get().toUByte(),
-            packetVersion = buffer.get().toUByte(),
-            packetTypeId = buffer.get().toUByte(),
-            sessionId = buffer.long.toULong(),
+            packetFormat = buffer.short,
+            gameMajorVersion = buffer.get(),
+            gameMinorVersion = buffer.get(),
+            packetVersion = buffer.get(),
+            packetTypeId = buffer.get(),
+            sessionId = buffer.long,
             sessionTimestamp = buffer.float,
-            frameId = buffer.int.toUInt(),
+            frameId = buffer.int,
             playerCarIndex = buffer.get().toInt(),
-            secondaryPlayerCarIndex = buffer.get().toUByte()
+            secondaryPlayerCarIndex = buffer.get()
         )
 
     private fun mapCarTelemetryData(buffer: ByteBuffer): CarTelemetryData =
         CarTelemetryData(
-            speed = buffer.short.toUShort(),
+            speed = buffer.short,
             throttle = buffer.float,
             steer = buffer.float,
             brake = buffer.float,
-            clutch = buffer.get().toUByte(),
+            clutch = buffer.get(),
             gear = buffer.get(),
-            engineRPM = buffer.short.toUShort(),
-            _drs = buffer.get().toUByte(),
-            revLightsPercent = buffer.get().toUByte(),
+            engineRPM = buffer.short,
+            _drs = buffer.get(),
+            revLightsPercent = buffer.get(),
             _brakesTemperature = arrayOf(
-                buffer.short.toUShort(),
-                buffer.short.toUShort(),
-                buffer.short.toUShort(),
-                buffer.short.toUShort()
+                buffer.short,
+                buffer.short,
+                buffer.short,
+                buffer.short
             ),
             _tyresSurfaceTemperature = arrayOf(
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte()
+                buffer.get(),
+                buffer.get(),
+                buffer.get(),
+                buffer.get()
             ),
             _tyresInnerTemperature = arrayOf(
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte()
+                buffer.get(),
+                buffer.get(),
+                buffer.get(),
+                buffer.get()
             ),
-            engineTemperature = buffer.short.toUShort(),
+            engineTemperature = buffer.short,
             _tyresPressure = arrayOf(
                 buffer.float,
                 buffer.float,
@@ -91,10 +90,10 @@ object TelemetryPacketDeserializer {
                 buffer.float
             ),
             _surfaceType = arrayOf(
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte()
+                buffer.get(),
+                buffer.get(),
+                buffer.get(),
+                buffer.get()
             )
         )
 
@@ -103,41 +102,41 @@ object TelemetryPacketDeserializer {
         CarTelemetryDataPacket(
             items = generateSequence(0) { it + 1 }.take(CarCount)
                 .map { mapCarTelemetryData(buffer) }.toList(),
-            buttonStatus = buffer.int.toUInt(),
-            mfdPanelIndex = buffer.get().toUByte(),
-            mfdPanelIndexSecondaryPlayer = buffer.get().toUByte(),
-            suggestedGear = buffer.get().toUByte()
+            buttonStatus = buffer.int,
+            mfdPanelIndex = buffer.get(),
+            mfdPanelIndexSecondaryPlayer = buffer.get(),
+            suggestedGear = buffer.get()
         )
 
     private fun mapLapData(buffer: ByteBuffer): LapData =
         LapData(
             lastLapTime = buffer.float,
             currentLapTime = buffer.float,
-            sector1TimeInMS = buffer.short.toUShort(),
-            sector2TimeInMS = buffer.short.toUShort(),
+            sector1TimeInMS = buffer.short,
+            sector2TimeInMS = buffer.short,
             bestLapTime = buffer.float,
-            bestLapNum = buffer.get().toUByte(),
-            bestLapSector1TimeInMS = buffer.short.toUShort(),
-            bestLapSector2TimeInMS = buffer.short.toUShort(),
-            bestLapSector3TimeInMS = buffer.short.toUShort(),
-            bestOverallSector1TimeInMS = buffer.short.toUShort(),
-            bestOverallSector1LapNum = buffer.get().toUByte(),
-            bestOverallSector2TimeInMS = buffer.short.toUShort(),
-            bestOverallSector2LapNum = buffer.get().toUByte(),
-            bestOverallSector3TimeInMS = buffer.short.toUShort(),
-            bestOverallSector3LapNum = buffer.get().toUByte(),
+            bestLapNum = buffer.get(),
+            bestLapSector1TimeInMS = buffer.short,
+            bestLapSector2TimeInMS = buffer.short,
+            bestLapSector3TimeInMS = buffer.short,
+            bestOverallSector1TimeInMS = buffer.short,
+            bestOverallSector1LapNum = buffer.get(),
+            bestOverallSector2TimeInMS = buffer.short,
+            bestOverallSector2LapNum = buffer.get(),
+            bestOverallSector3TimeInMS = buffer.short,
+            bestOverallSector3LapNum = buffer.get(),
             lapDistance = buffer.float,
             totalDistance = buffer.float,
             safetyCarDelta = buffer.float,
-            carPosition = buffer.get().toUByte(),
-            currentLapNum = buffer.get().toUByte(),
-            _pitStatus = buffer.get().toUByte(),
-            sector = buffer.get().toUByte(),
-            _currentLapInvalid = buffer.get().toUByte(),
-            penalties = buffer.get().toUByte(),
-            gridPosition = buffer.get().toUByte(),
-            _driverStatus = buffer.get().toUByte(),
-            _resultStatus = buffer.get().toUByte()
+            carPosition = buffer.get(),
+            currentLapNum = buffer.get(),
+            _pitStatus = buffer.get(),
+            sector = buffer.get(),
+            _currentLapInvalid = buffer.get(),
+            penalties = buffer.get(),
+            gridPosition = buffer.get(),
+            _driverStatus = buffer.get(),
+            _resultStatus = buffer.get()
         )
 
     private fun mapLapDataPacket(buffer: ByteBuffer): LapDataPacket =
@@ -148,43 +147,43 @@ object TelemetryPacketDeserializer {
 
     private fun mapCarStatusData(buffer: ByteBuffer): CarStatusData =
         CarStatusData(
-            tractionControl = buffer.get().toUByte(),
-            antiLockBrakes = buffer.get().toUByte(),
-            _fuelMix = buffer.get().toUByte(),
-            frontBrakeBias = buffer.get().toUByte(),
-            _pitLimiterStatus = buffer.get().toUByte(),
+            tractionControl = buffer.get(),
+            antiLockBrakes = buffer.get(),
+            _fuelMix = buffer.get(),
+            frontBrakeBias = buffer.get(),
+            _pitLimiterStatus = buffer.get(),
             fuelInTank = buffer.float,
             fuelCapacity = buffer.float,
             fuelRemainingLaps = buffer.float,
-            maxRPM = buffer.short.toUShort(),
-            idleRPM = buffer.short.toUShort(),
-            maxGears = buffer.get().toUByte(),
-            _drsAllowed = buffer.get().toUByte(),
-            drsActivationDistance = buffer.short.toUShort(),
+            maxRPM = buffer.short,
+            idleRPM = buffer.short,
+            maxGears = buffer.get(),
+            _drsAllowed = buffer.get(),
+            drsActivationDistance = buffer.short,
             _tyresWear = arrayOf(
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte()
+                buffer.get(),
+                buffer.get(),
+                buffer.get(),
+                buffer.get()
             ),
-            _actualTyreCompound = buffer.get().toUByte(),
-            _visualTyreCompound = buffer.get().toUByte(),
-            tyresAgeLaps = buffer.get().toUByte(),
+            _actualTyreCompound = buffer.get(),
+            _visualTyreCompound = buffer.get(),
+            tyresAgeLaps = buffer.get(),
             _tyresDamage = arrayOf(
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte(),
-                buffer.get().toUByte()
+                buffer.get(),
+                buffer.get(),
+                buffer.get(),
+                buffer.get()
             ),
-            frontLeftWingDamage = buffer.get().toUByte(),
-            frontRightWingDamage = buffer.get().toUByte(),
-            rearWingDamage = buffer.get().toUByte(),
-            _drsFault = buffer.get().toUByte(),
-            engineDamage = buffer.get().toUByte(),
-            gearBoxDamage = buffer.get().toUByte(),
+            frontLeftWingDamage = buffer.get(),
+            frontRightWingDamage = buffer.get(),
+            rearWingDamage = buffer.get(),
+            _drsFault = buffer.get(),
+            engineDamage = buffer.get(),
+            gearBoxDamage = buffer.get(),
             _vehicleFiaFlags = buffer.get(),
             ersStoreEnergy = buffer.float,
-            ersDeployMode = buffer.get().toUByte(),
+            ersDeployMode = buffer.get(),
             ersHarvestedThisLapMGUK = buffer.float,
             ersHarvestedThisLapMGUH = buffer.float,
             ersDeployedThisLap = buffer.float
@@ -198,37 +197,37 @@ object TelemetryPacketDeserializer {
 
     private fun mapSessionData(buffer: ByteBuffer): SessionDataPacket =
         SessionDataPacket(
-            weather = buffer.get().toUByte(),
-            trackTemperature = buffer.get().toUByte(),
+            weather = buffer.get(),
+            trackTemperature = buffer.get(),
             airTemperature = buffer.get(),
-            totalLaps = buffer.get().toUByte(),
-            trackLength = buffer.short.toUShort(),
-            sessionType = buffer.get().toUByte(),
+            totalLaps = buffer.get(),
+            trackLength = buffer.short,
+            sessionType = buffer.get(),
             trackId = buffer.get(),
-            formula = buffer.get().toUByte(),
-            sessionTimeLeft = buffer.short.toUShort(),
-            sessionDuration = buffer.short.toUShort(),
-            pitSpeedLimit = buffer.get().toUByte(),
-            gamePaused = buffer.get().toUByte(),
-            isSpectating = buffer.get().toUByte(),
-            spectatorCarIndex = buffer.get().toUByte(),
-            sliProNativeSupport = buffer.get().toUByte()
+            formula = buffer.get(),
+            sessionTimeLeft = buffer.short,
+            sessionDuration = buffer.short,
+            pitSpeedLimit = buffer.get(),
+            gamePaused = buffer.get(),
+            isSpectating = buffer.get(),
+            spectatorCarIndex = buffer.get(),
+            sliProNativeSupport = buffer.get()
         )
 
     private fun mapParticipantData(buffer: ByteBuffer): ParticipantData {
         val participantData = ParticipantData(
-            aiControlled = buffer.get().toUByte(),
-            _driverId = buffer.get().toUByte(),
-            teamId = buffer.get().toUByte(),
-            raceNumber = buffer.get().toUByte(),
-            nationality = buffer.get().toUByte()
+            aiControlled = buffer.get(),
+            _driverId = buffer.get(),
+            teamId = buffer.get(),
+            raceNumber = buffer.get(),
+            nationality = buffer.get()
         )
         buffer.position(buffer.position() + 49)
         return participantData
     }
 
     private fun mapParticipantDataPacket(buffer: ByteBuffer): ParticipantDataPacket {
-        val count = buffer.get().toUByte()
+        val count = buffer.get()
         return ParticipantDataPacket(
             generateSequence(0) { it + 1 }.take(count.toInt())
                 .map { mapParticipantData(buffer) }.toList()
@@ -237,27 +236,27 @@ object TelemetryPacketDeserializer {
 
     private fun mapCarSetupData(buffer: ByteBuffer): CarSetupData =
         CarSetupData(
-            frontWing = buffer.get().toUByte(),
-            rearWing = buffer.get().toUByte(),
-            onThrottle = buffer.get().toUByte(),
-            offThrottle = buffer.get().toUByte(),
+            frontWing = buffer.get(),
+            rearWing = buffer.get(),
+            onThrottle = buffer.get(),
+            offThrottle = buffer.get(),
             frontCamber = buffer.float,
             rearCamber = buffer.float,
             frontToe = buffer.float,
             rearToe = buffer.float,
-            frontSuspension = buffer.get().toUByte(),
-            rearSuspension = buffer.get().toUByte(),
-            frontAntiRollBar = buffer.get().toUByte(),
-            rearAntiRollBar = buffer.get().toUByte(),
-            frontSuspensionHeight = buffer.get().toUByte(),
-            rearSuspensionHeight = buffer.get().toUByte(),
-            brakePressure = buffer.get().toUByte(),
-            brakeBias = buffer.get().toUByte(),
+            frontSuspension = buffer.get(),
+            rearSuspension = buffer.get(),
+            frontAntiRollBar = buffer.get(),
+            rearAntiRollBar = buffer.get(),
+            frontSuspensionHeight = buffer.get(),
+            rearSuspensionHeight = buffer.get(),
+            brakePressure = buffer.get(),
+            brakeBias = buffer.get(),
             rearLeftTyrePressure = buffer.float,
             rearRightTyrePressure = buffer.float,
             frontLeftTyrePressure = buffer.float,
             frontRightTyrePressure = buffer.float,
-            ballast = buffer.get().toUByte(),
+            ballast = buffer.get(),
             fuelLoad = buffer.float
         )
 
@@ -272,32 +271,32 @@ object TelemetryPacketDeserializer {
             EventDetails.Type.SessionStarted -> EmptyEventData // Sent when the session starts
             EventDetails.Type.SessionEnded -> EmptyEventData // Sent when the session ends
             EventDetails.Type.FastestLap -> FastestLapData(
-                vehicleIdx = buffer.get().toUByte(),
+                vehicleIdx = buffer.get(),
                 lapTime = buffer.float
             ) // When a driver achieves the fastest lap
             EventDetails.Type.Retirement -> Retirement(
-                vehicleIdx = buffer.get().toUByte()
+                vehicleIdx = buffer.get()
             ) // When a driver retires
             EventDetails.Type.DRSEnabled -> EmptyEventData // Race control have enabled DRS
             EventDetails.Type.DRSDisabled -> EmptyEventData // Race control have disabled DRS
             EventDetails.Type.TeammateInPits -> TeamMateInPits(
-                vehicleIdx = buffer.get().toUByte()
+                vehicleIdx = buffer.get()
             ) // Your team mate has entered the pits
             EventDetails.Type.ChequeredFlag -> EmptyEventData // The chequered flag has been waved
             EventDetails.Type.RaceWinner -> RaceWinner(
-                vehicleIdx = buffer.get().toUByte()
+                vehicleIdx = buffer.get()
             ) // The race winner is announced
             EventDetails.Type.PenaltyIssued -> Penalty(
-                penaltyType = buffer.get().toUByte(),
-                infringementType = buffer.get().toUByte(),
-                vehicleIdx = buffer.get().toUByte(),
-                otherVehicleIdx = buffer.get().toUByte(),
-                time = buffer.get().toUByte(),
-                lapNum = buffer.get().toUByte(),
-                placesGained = buffer.get().toUByte()
+                penaltyType = buffer.get(),
+                infringementType = buffer.get(),
+                vehicleIdx = buffer.get(),
+                otherVehicleIdx = buffer.get(),
+                time = buffer.get(),
+                lapNum = buffer.get(),
+                placesGained = buffer.get()
             )  // A penalty has been issued – details in event
             EventDetails.Type.SpeedTrap -> SpeedTrap(
-                vehicleIdx = buffer.get().toUByte(),
+                vehicleIdx = buffer.get(),
                 speed = buffer.float
             ) // Speed trap has been triggered by fastest speed
             else -> EmptyEventData

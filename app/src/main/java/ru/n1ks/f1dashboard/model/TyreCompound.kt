@@ -23,9 +23,8 @@ enum class TyreCompound(val char: Char, val color: Int) {
     Hard('Ⓗ', R.color.tyreM),
     ;
 
-    @ExperimentalUnsignedTypes
     companion object {
-        fun defineActualByCode(code: UByte) = when (code.toInt()) {
+        fun defineActualByCode(code: Byte) = when (code.toInt()) {
             16 -> C5
             17 -> C4
             18 -> C3
@@ -43,7 +42,7 @@ enum class TyreCompound(val char: Char, val color: Int) {
             else -> X
         }
 
-        fun defineVisualByCode(code: UByte) = when (code.toInt()) {
+        fun defineVisualByCode(code: Byte) = when (code.toInt()) {
             16 -> Soft
             17 -> Medium
             18 -> Hard
