@@ -580,7 +580,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 aheadTimeField.text = "X:XX.XXX"
                 aheadTimeField.setTextColor(getColor(R.color.white))
                 aheadTyreField.text = "X"
-                aheadDriverField.setTextColor(getColor(R.color.white))
+                aheadTyreField.setTextColor(getColor(R.color.white))
                 aheadTyreField.background = null
             }
 
