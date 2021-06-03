@@ -640,7 +640,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 }
             }
             packet.asType<ParticipantDataPacket> {
-                if (data.competitorId != -1) {
+                if (data.competitorId >= 0 && data.competitorId < it.data.items.size) {
                     return@LiveDataField data.copy(
                         driver = it.data.items[data.competitorId].driver
                     )
