@@ -41,7 +41,8 @@ data class Competitor(
     val lastLapTime: Float,
     val bestLapTime: Float,
     val lap: Int,
-    val tyreType: TyreCompound,
+    val visualTyreType: TyreCompound,
+    val actualTyreType: TyreCompound,
     val tyreAge: Int,
     val driver: CompetitorDriver?
 ) {
@@ -51,6 +52,22 @@ data class Competitor(
 
     val isTyresNew: Boolean
         get() = tyreAge < 3
+
+    val tyreTypeValue: String
+        get() {
+            return if (visualTyreType == actualTyreType) {
+                visualTyreType.char.toString()
+            } else {
+                when {
+                    visualTyreType == TyreCompound.X -> actualTyreType.char.toString()
+                    actualTyreType == TyreCompound.X -> visualTyreType.char.toString()
+                    else -> actualTyreType.char.toString() + visualTyreType.char.toString()
+                }
+            }
+        }
+
+    val tyreTyreColor: Int
+        get() = visualTyreType.color
 
     fun inBound(size: Int): Boolean = id in 0 until size
 }
@@ -443,7 +460,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     lastLapTime = playerData.lastLapTime,
                     bestLapTime = playerData.bestLapTime,
                     lap = playerData.currentLapNum.toInt(),
-                    tyreType = data.player?.tyreType ?: TyreCompound.X,
+                    visualTyreType = data.player?.visualTyreType ?: TyreCompound.X,
+                    actualTyreType = data.player?.actualTyreType ?: TyreCompound.X,
                     tyreAge = data.player?.tyreAge ?: Int.MAX_VALUE,
                     driver = null
                 )
@@ -454,7 +472,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
-                        tyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.tyreType else TyreCompound.X,
+                        visualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.actualTyreType else TyreCompound.X,
                         tyreAge = data.ahead?.tyreAge ?: Int.MAX_VALUE,
                         driver = if (data.ahead?.id == rivalAheadIndex) data.ahead.driver else null
                     )
@@ -466,7 +485,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
-                        tyreType = if (data.behind?.id == rivalBehindIndex) data.behind.tyreType else TyreCompound.X,
+                        visualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.actualTyreType else TyreCompound.X,
                         tyreAge = data.behind?.tyreAge ?: Int.MAX_VALUE,
                         driver = if (data.behind?.id == rivalBehindIndex) data.behind.driver else null
                     )
@@ -502,7 +522,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 if (data.player?.inBound(it.data.items.size) == true) {
                     newData = data.copy(
                         player = data.player.copy(
-                            tyreType = it.data.items[data.player.id].visualTyreCompound,
+                            visualTyreType = it.data.items[data.player.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.player.id].actualTyreCompound,
                             tyreAge = it.data.items[data.player.id].tyresAgeLaps.toInt()
                         )
                     )
@@ -510,7 +531,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 if (data.ahead?.inBound(it.data.items.size) == true) {
                     newData = newData.copy(
                         ahead = data.ahead.copy(
-                            tyreType = it.data.items[data.ahead.id].visualTyreCompound,
+                            visualTyreType = it.data.items[data.ahead.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.ahead.id].actualTyreCompound,
                             tyreAge = it.data.items[data.ahead.id].tyresAgeLaps.toInt()
                         )
                     )
@@ -518,7 +540,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 if (data.behind?.inBound(it.data.items.size) == true) {
                     newData = newData.copy(
                         behind = data.behind.copy(
-                            tyreType = it.data.items[data.behind.id].visualTyreCompound,
+                            visualTyreType = it.data.items[data.behind.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.behind.id].actualTyreCompound,
                             tyreAge = it.data.items[data.behind.id].tyresAgeLaps.toInt()
                         )
                     )
@@ -548,8 +571,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     else -> aheadTimeField.setTextColor(getColor(R.color.white))
                 }
 
-                aheadTyreField.text = context.ahead.tyreType.char.toString()
-                aheadTyreField.setTextColor(getColor(context.ahead.tyreType.color))
+                aheadTyreField.text = context.ahead.tyreTypeValue
+                aheadTyreField.setTextColor(getColor(context.ahead.tyreTyreColor))
                 aheadTyreField.background =
                     if (context.ahead.isTyresNew) getDrawable(R.color.tyreNew) else null
             } else {
@@ -575,8 +598,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     playerLastTimeField.setTextColor(getColor(R.color.white))
                 }
 
-                playerTyreField.text = context.player.tyreType.char.toString()
-                playerTyreField.setTextColor(getColor(context.player.tyreType.color))
+                playerTyreField.text = context.player.tyreTypeValue
+                playerTyreField.setTextColor(getColor(context.player.tyreTyreColor))
                 playerTyreField.background =
                     if (context.player.isTyresNew) getDrawable(R.color.tyreNew) else null
             } else {
@@ -610,8 +633,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     }
                 }
 
-                behindTyreFiled.text = context.behind.tyreType.char.toString()
-                behindTyreFiled.setTextColor(getColor(context.behind.tyreType.color))
+                behindTyreFiled.text = context.behind.tyreTypeValue
+                behindTyreFiled.setTextColor(getColor(context.behind.tyreTyreColor))
                 behindTyreFiled.background =
                     if (context.behind.isTyresNew) getDrawable(R.color.tyreNew) else null
 
