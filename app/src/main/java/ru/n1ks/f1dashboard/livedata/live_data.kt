@@ -20,6 +20,7 @@ import kotlin.math.absoluteValue
 
 interface ViewProvider {
 
+    fun <T : View> findTypedViewById(id: Int): T
     fun findViewById(id: Int): View
     fun getDrawable(id: Int): Drawable
     fun getColor(id: Int): Int
@@ -45,18 +46,63 @@ data class Competitor(
     val driver: CompetitorDriver?
 ) {
 
+    val positionString: String
+        get() = position.toString().padEnd(2, ' ')
+
+    val isTyresNew: Boolean
+        get() = tyreAge < 3
+
     fun inBound(size: Int): Boolean = id in 0 until size
-
-    fun positionString(): String = position.toString().padEnd(2, ' ')
-
-    fun isTyresNew(): Boolean = tyreAge < 3
 }
 
 data class TyreState(
     val wear: Int,
     val innerTemperature: Int,
     val outerTemperature: Int
-)
+) {
+
+    val wearColor: Int
+        get() {
+            return when {
+                wear < 5 -> R.color.wear0
+                wear < 15 -> R.color.wear10
+                wear < 23 -> R.color.wear20
+                wear < 32 -> R.color.wear30
+                wear < 40 -> R.color.wear40
+                wear < 50 -> R.color.wear50
+                wear < 60 -> R.color.wear60
+                wear < 70 -> R.color.wear70
+                wear < 80 -> R.color.wear80
+                wear < 90 -> R.color.wear90
+                wear <= 100 -> R.color.wear100
+                else -> R.color.inop
+            }
+        }
+
+    val wearValue: String
+        get() {
+            return if (wear < 0 || wear > 99) {
+                "XX"
+            } else {
+                wear.toString()
+            }
+        }
+
+    val innerTemperatureColor: Int
+        get() = defineTempColor(innerTemperature)
+
+    val outerTemperatureColor: Int
+        get() = defineTempColor(outerTemperature)
+
+    private fun defineTempColor(temp: Int): Int {
+        return when {
+            temp < 82 -> R.color.lowTemp
+            temp < 103 -> R.color.normalTemp
+            temp < 110 -> R.color.warmTemp
+            else -> R.color.highTemp
+        }
+    }
+}
 
 class LiveDataField<T>(
     val name: String,
@@ -104,32 +150,6 @@ data class TypesField(
     val tyreRR: TyreState
 )
 
-private fun defineWearColor(wear: Int): Int {
-    return when {
-        wear < 5 -> R.color.wear0
-        wear < 15 -> R.color.wear10
-        wear < 23 -> R.color.wear20
-        wear < 32 -> R.color.wear30
-        wear < 40 -> R.color.wear40
-        wear < 50 -> R.color.wear50
-        wear < 60 -> R.color.wear60
-        wear < 70 -> R.color.wear70
-        wear < 80 -> R.color.wear80
-        wear < 90 -> R.color.wear90
-        wear <= 100 -> R.color.wear100
-        else -> R.color.inop
-    }
-}
-
-private fun defineTempColor(temp: Int): Int {
-    return when {
-        temp < 82 -> R.color.lowTemp
-        temp < 103 -> R.color.normalTemp
-        temp < 110 -> R.color.warmTemp
-        else -> R.color.highTemp
-    }
-}
-
 private val secondsAndMsFormat: DecimalFormat = DecimalFormat("00.000")
 private val secondsFormat: DecimalFormat = DecimalFormat("00")
 private val fuelFormat: DecimalFormat = DecimalFormat("+#,#0.00;-#")
@@ -150,6 +170,9 @@ class LiveData(
 
     private val views = HashMap<Int, View>()
     private val viewProvider = object : ViewProvider {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : View> findTypedViewById(id: Int): T = findViewById(id) as T
 
         override fun findViewById(id: Int): View =
             views[id].let {
@@ -511,7 +534,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
             if (context.ahead != null && context.ahead.position > 0) {
                 aheadDriverField.text =
-                    context.ahead.positionString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    context.ahead.positionString + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 aheadTimeField.text =
                     timeFormatter(context.ahead.lastLapTime)
 
@@ -528,7 +551,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 aheadTyreField.text = context.ahead.tyreType.char.toString()
                 aheadTyreField.setTextColor(getColor(context.ahead.tyreType.color))
                 aheadTyreField.background =
-                    if (context.ahead.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                    if (context.ahead.isTyresNew) getDrawable(R.color.tyreNew) else null
             } else {
                 aheadDriverField.text = "XX"
                 aheadTimeField.text = "X:XX.XXX"
@@ -555,7 +578,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 playerTyreField.text = context.player.tyreType.char.toString()
                 playerTyreField.setTextColor(getColor(context.player.tyreType.color))
                 playerTyreField.background =
-                    if (context.player.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                    if (context.player.isTyresNew) getDrawable(R.color.tyreNew) else null
             } else {
                 playerBestTimeField.text = "X:XX.XXX"
                 playerLastTimeField.text = "X:XX.XXX"
@@ -570,7 +593,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
 
             if (context.behind != null) {
                 behindDriverField.text =
-                    context.behind.positionString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    context.behind.positionString + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
                 behindTimeField.text = timeFormatter(context.behind.lastLapTime)
 
                 if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
@@ -590,7 +613,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 behindTyreFiled.text = context.behind.tyreType.char.toString()
                 behindTyreFiled.setTextColor(getColor(context.behind.tyreType.color))
                 behindTyreFiled.background =
-                    if (context.behind.isTyresNew()) getDrawable(R.color.tyreNew) else null
+                    if (context.behind.isTyresNew) getDrawable(R.color.tyreNew) else null
 
             } else {
                 behindDriverField.text = "XX"
@@ -731,32 +754,40 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            findViewById(R.id.wearFLValue).background =
-                getDrawable(defineWearColor(it.tyreFL.wear))
-            findViewById(R.id.wearFRValue).background =
-                getDrawable(defineWearColor(it.tyreFR.wear))
-            findViewById(R.id.wearRLValue).background =
-                getDrawable(defineWearColor(it.tyreRL.wear))
-            findViewById(R.id.wearRRValue).background =
-                getDrawable(defineWearColor(it.tyreRR.wear))
+            findTypedViewById<TextView>(R.id.wearFLValue).also { view ->
+                view.background = getDrawable(it.tyreFL.wearColor)
+                view.text = it.tyreFL.wearValue
+            }
+            findTypedViewById<TextView>(R.id.wearFRValue).also { view ->
+                view.background = getDrawable(it.tyreFR.wearColor)
+                view.text = it.tyreFR.wearValue
+            }
+            findTypedViewById<TextView>(R.id.wearRLValue).also { view ->
+                view.background = getDrawable(it.tyreRL.wearColor)
+                view.text = it.tyreRL.wearValue
+            }
+            findTypedViewById<TextView>(R.id.wearRRValue).also { view ->
+                view.background = getDrawable(it.tyreRR.wearColor)
+                view.text = it.tyreRR.wearValue
+            }
 
             findViewById(R.id.surfaceFLValue).background =
-                getDrawable(defineTempColor(it.tyreFL.outerTemperature))
+                getDrawable(it.tyreFL.outerTemperatureColor)
             findViewById(R.id.surfaceFRValue).background =
-                getDrawable(defineTempColor(it.tyreFR.outerTemperature))
+                getDrawable(it.tyreFR.outerTemperatureColor)
             findViewById(R.id.surfaceRLValue).background =
-                getDrawable(defineTempColor(it.tyreRL.outerTemperature))
+                getDrawable(it.tyreRL.outerTemperatureColor)
             findViewById(R.id.surfaceRRValue).background =
-                getDrawable(defineTempColor(it.tyreRR.outerTemperature))
+                getDrawable(it.tyreRR.outerTemperatureColor)
 
             findViewById(R.id.innerFLValue).background =
-                getDrawable(defineTempColor(it.tyreFL.innerTemperature))
+                getDrawable(it.tyreFL.innerTemperatureColor)
             findViewById(R.id.innerFRValue).background =
-                getDrawable(defineTempColor(it.tyreFR.innerTemperature))
+                getDrawable(it.tyreFR.innerTemperatureColor)
             findViewById(R.id.innerRLValue).background =
-                getDrawable(defineTempColor(it.tyreRL.innerTemperature))
+                getDrawable(it.tyreRL.innerTemperatureColor)
             findViewById(R.id.innerRRValue).background =
-                getDrawable(defineTempColor(it.tyreRR.innerTemperature))
+                getDrawable(it.tyreRR.innerTemperatureColor)
         }
     ),
     LiveDataField(
