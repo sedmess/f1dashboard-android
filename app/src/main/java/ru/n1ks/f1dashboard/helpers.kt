@@ -1,6 +1,10 @@
 package ru.n1ks.f1dashboard
 
-internal const val OneByte = 1.toByte()
+internal object Bytes {
+
+    const val One = 1.toByte()
+    const val Two = 2.toByte()
+}
 
 internal infix fun Byte.plusByte(increment: Byte): Byte = this.plus(increment).toByte()
 

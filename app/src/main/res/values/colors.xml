@@ -15,7 +15,9 @@
     <color name="highMode">#467127</color>
     <color name="leanMode">#854F00</color>
     <color name="ahead">#595959</color>
+    <color name="ahead2">#8E8E8E</color>
     <color name="behind">#393939</color>
+    <color name="behind2">#202020</color>
     <color name="normalTemp">#558B2F</color>
     <color name="warmTemp">#BD8D40</color>
     <color name="highTemp">#C62828</color>

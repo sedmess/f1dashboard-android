@@ -1,6 +1,6 @@
 package ru.n1ks.f1dashboard.model
 
-import ru.n1ks.f1dashboard.OneByte
+import ru.n1ks.f1dashboard.Bytes
 
 interface TelemetryData
 
@@ -79,7 +79,7 @@ class CarTelemetryData(
 ) {
 
     val drs: Boolean
-        get() = _drs == OneByte
+        get() = _drs == Bytes.One
 
     val brakesTemperatureRL: Short
         get() = _brakesTemperature[0]
@@ -330,13 +330,13 @@ class CarStatusData(
     }
 
     val fuelMix: Int
-        get() = (_fuelMix + OneByte).toInt()
+        get() = _fuelMix + Bytes.One
 
     val pitLimiter: Boolean
-        get() = _pitLimiterStatus == OneByte
+        get() = _pitLimiterStatus == Bytes.One
 
     val drsAllowed: Boolean
-        get() = _drsAllowed == OneByte
+        get() = _drsAllowed == Bytes.One
 
     val drsAvailable: Boolean
         get() = drsActivationDistance > 0
@@ -372,7 +372,7 @@ class CarStatusData(
         get() = _tyresDamage[3]
 
     val drsFault: Boolean
-        get() = _drsFault == OneByte
+        get() = _drsFault == Bytes.One
 
     val fiaFlag: FiaFlag
         get() = when (_vehicleFiaFlags.toInt()) {
