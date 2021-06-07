@@ -64,7 +64,7 @@ data class Competitor(
         }
 
     val tyreTyreColor: Int
-        get() = visualTyreType.color
+        get() = if (visualTyreType != TyreCompound.X) visualTyreType.color else actualTyreType.color
 
     fun inBound(size: Int): Boolean = id in 0 until size
 }
