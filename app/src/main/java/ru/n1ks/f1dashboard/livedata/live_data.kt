@@ -17,8 +17,7 @@ import kotlin.math.absoluteValue
 
 interface ViewProvider {
 
-    fun <T : View> findTypedViewById(id: Int): T
-    fun findViewById(id: Int): View
+    fun <T : View> findViewById(id: Int): T
     fun getDrawable(id: Int): Drawable
     fun getColor(id: Int): Int
 }
@@ -188,18 +187,16 @@ class LiveData(
     private val viewProvider = object : ViewProvider {
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T : View> findTypedViewById(id: Int): T = findViewById(id) as T
-
-        override fun findViewById(id: Int): View =
+        override fun <T : View> findViewById(id: Int): T =
             views[id].let {
                 if (it == null) {
-                    val view = activity.findViewById<View>(id)
+                    val view = activity.findViewById<T>(id)
                     views[id] = view
                     view
                 } else {
                     it
                 }
-            }
+            } as T
 
         override fun getDrawable(id: Int): Drawable =
             ContextCompat.getDrawable(activity, id)!!
@@ -235,7 +232,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val lapField = findViewById(R.id.lapValue) as TextView
+            val lapField = findViewById<TextView>(R.id.lapValue)
             lapField.text = if (it.lapsCount - it.currentLap >= 0) {
                 "+${it.lapsCount - it.currentLap}"
             } else {
@@ -253,7 +250,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val fuelField = findViewById(R.id.fuelValue) as TextView
+            val fuelField = findViewById<TextView>(R.id.fuelValue)
             fuelField.text = fuelFormat.format(it)
         }
     ),
@@ -267,7 +264,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val fuelField = findViewById(R.id.fuelValue) as TextView
+            val fuelField = findViewById<TextView>(R.id.fuelValue)
             when (it) {
                 1 -> {
                     fuelField.background = getDrawable(R.color.leanMode)
@@ -294,7 +291,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val ersField = findViewById(R.id.ersValue) as TextView
+            val ersField = findViewById<TextView>(R.id.ersValue)
             ersField.text = it.toString()
             when (it) {
                 0 -> {
@@ -322,7 +319,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val bbField = findViewById(R.id.bbValue) as TextView
+            val bbField = findViewById<TextView>(R.id.bbValue)
             bbField.text = it.toString()
             bbField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
@@ -345,7 +342,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val diffField = findViewById(R.id.diffValue) as TextView
+            val diffField = findViewById<TextView>(R.id.diffValue)
             diffField.text = it.toString()
             diffField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
@@ -368,7 +365,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val recommendedGearField = findViewById(R.id.recommendedGearValue) as TextView
+            val recommendedGearField = findViewById<TextView>(R.id.recommendedGearValue)
             if (it > 0) {
                 recommendedGearField.text = it.toString()
             } else {
@@ -409,7 +406,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         onUpdateFunc = {
-            val drsField = findViewById(R.id.drsValue) as TextView
+            val drsField = findViewById<TextView>(R.id.drsValue)
             when (it.state) {
                 DrsCommonState.Unavailable -> {
                     drsField.text = "X"
@@ -621,9 +618,9 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         },
         { context ->
             run {
-                val aheadDriverField = findViewById(R.id.aheadDriverValue) as TextView
-                val aheadTimeField = findViewById(R.id.aheadTimeValue) as TextView
-                val aheadTyreField = findViewById(R.id.aheadTyreValue) as TextView
+                val aheadDriverField = findViewById<TextView>(R.id.aheadDriverValue)
+                val aheadTimeField = findViewById<TextView>(R.id.aheadTimeValue)
+                val aheadTyreField = findViewById<TextView>(R.id.aheadTyreValue)
 
                 if (context.ahead != null && context.ahead.position > 0) {
                     aheadDriverField.text =
@@ -656,9 +653,9 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
 
             run {
-                val ahead2DriverField = findViewById(R.id.ahead2DriverValue) as TextView
-                val ahead2TimeField = findViewById(R.id.ahead2TimeValue) as TextView
-                val ahead2TyreField = findViewById(R.id.ahead2TyreValue) as TextView
+                val ahead2DriverField = findViewById<TextView>(R.id.ahead2DriverValue)
+                val ahead2TimeField = findViewById<TextView>(R.id.ahead2TimeValue)
+                val ahead2TyreField = findViewById<TextView>(R.id.ahead2TyreValue)
 
                 if (context.ahead2 != null && context.ahead2.position > 0) {
                     ahead2DriverField.text =
@@ -691,9 +688,9 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
 
             run {
-                val playerBestTimeField = findViewById(R.id.myBestValue) as TextView
-                val playerLastTimeField = findViewById(R.id.myTimeValue) as TextView
-                val playerTyreField = findViewById(R.id.myTyreValue) as TextView
+                val playerBestTimeField = findViewById<TextView>(R.id.myBestValue)
+                val playerLastTimeField = findViewById<TextView>(R.id.myTimeValue)
+                val playerTyreField = findViewById<TextView>(R.id.myTyreValue)
 
                 if (context.player != null) {
                     playerBestTimeField.text = timeFormatter(context.player.bestLapTime)
@@ -719,9 +716,9 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
 
             run {
-                val behindDriverField = findViewById(R.id.behindDriverValue) as TextView
-                val behindTimeField = findViewById(R.id.behindTimeValue) as TextView
-                val behindTyreFiled = findViewById(R.id.behindTyreValue) as TextView
+                val behindDriverField = findViewById<TextView>(R.id.behindDriverValue)
+                val behindTimeField = findViewById<TextView>(R.id.behindTimeValue)
+                val behindTyreFiled = findViewById<TextView>(R.id.behindTyreValue)
 
                 if (context.behind != null) {
                     behindDriverField.text =
@@ -758,9 +755,9 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             }
 
             run {
-                val behind2DriverField = findViewById(R.id.behind2DriverValue) as TextView
-                val behind2TimeField = findViewById(R.id.behind2TimeValue) as TextView
-                val behind2TyreFiled = findViewById(R.id.behind2TyreValue) as TextView
+                val behind2DriverField = findViewById<TextView>(R.id.behind2DriverValue)
+                val behind2TimeField = findViewById<TextView>(R.id.behind2TimeValue)
+                val behind2TyreFiled = findViewById<TextView>(R.id.behind2TyreValue)
 
                 if (context.behind2 != null) {
                     behind2DriverField.text =
@@ -926,39 +923,39 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            findTypedViewById<TextView>(R.id.wearFLValue).also { view ->
+            findViewById<TextView>(R.id.wearFLValue).also { view ->
                 view.background = getDrawable(it.tyreFL.wearColor)
                 view.text = it.tyreFL.wearValue
             }
-            findTypedViewById<TextView>(R.id.wearFRValue).also { view ->
+            findViewById<TextView>(R.id.wearFRValue).also { view ->
                 view.background = getDrawable(it.tyreFR.wearColor)
                 view.text = it.tyreFR.wearValue
             }
-            findTypedViewById<TextView>(R.id.wearRLValue).also { view ->
+            findViewById<TextView>(R.id.wearRLValue).also { view ->
                 view.background = getDrawable(it.tyreRL.wearColor)
                 view.text = it.tyreRL.wearValue
             }
-            findTypedViewById<TextView>(R.id.wearRRValue).also { view ->
+            findViewById<TextView>(R.id.wearRRValue).also { view ->
                 view.background = getDrawable(it.tyreRR.wearColor)
                 view.text = it.tyreRR.wearValue
             }
 
-            findViewById(R.id.surfaceFLValue).background =
+            findViewById<View>(R.id.surfaceFLValue).background =
                 getDrawable(it.tyreFL.outerTemperatureColor)
-            findViewById(R.id.surfaceFRValue).background =
+            findViewById<View>(R.id.surfaceFRValue).background =
                 getDrawable(it.tyreFR.outerTemperatureColor)
-            findViewById(R.id.surfaceRLValue).background =
+            findViewById<View>(R.id.surfaceRLValue).background =
                 getDrawable(it.tyreRL.outerTemperatureColor)
-            findViewById(R.id.surfaceRRValue).background =
+            findViewById<View>(R.id.surfaceRRValue).background =
                 getDrawable(it.tyreRR.outerTemperatureColor)
 
-            findViewById(R.id.innerFLValue).background =
+            findViewById<View>(R.id.innerFLValue).background =
                 getDrawable(it.tyreFL.innerTemperatureColor)
-            findViewById(R.id.innerFRValue).background =
+            findViewById<View>(R.id.innerFRValue).background =
                 getDrawable(it.tyreFR.innerTemperatureColor)
-            findViewById(R.id.innerRLValue).background =
+            findViewById<View>(R.id.innerRLValue).background =
                 getDrawable(it.tyreRL.innerTemperatureColor)
-            findViewById(R.id.innerRRValue).background =
+            findViewById<View>(R.id.innerRRValue).background =
                 getDrawable(it.tyreRR.innerTemperatureColor)
         }
     ),
@@ -975,8 +972,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val frontLeftWingField = findViewById(R.id.frontWingLeftDamage) as TextView
-            val frontRightWingField = findViewById(R.id.frontWingRightDamage) as TextView
+            val frontLeftWingField = findViewById<TextView>(R.id.frontWingLeftDamage)
+            val frontRightWingField = findViewById<TextView>(R.id.frontWingRightDamage)
             if (it[0] > 0) {
                 frontLeftWingField.text = it[0].toString()
                 frontLeftWingField.background = getDrawable(R.color.warn)
@@ -1003,7 +1000,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val rearWingField = findViewById(R.id.rearWingDamage) as TextView
+            val rearWingField = findViewById<TextView>(R.id.rearWingDamage)
             if (it > 0) {
                 rearWingField.text = it.toString()
                 rearWingField.background = getDrawable(R.color.warn)
@@ -1023,7 +1020,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val engineField = findViewById(R.id.engineTempValue) as TextView
+            val engineField = findViewById<TextView>(R.id.engineTempValue)
             engineField.text = it.toString()
             when {
                 it >= 130 -> {
