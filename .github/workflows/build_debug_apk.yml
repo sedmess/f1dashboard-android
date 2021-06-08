@@ -1,0 +1,28 @@
+name: "build debug apk"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "develop", "feature/*" ]
+
+jobs:
+  buildDebug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: assemble
+        uses: vgaidarji/android-github-actions-build@v1.0.1
+        with:
+          args: ./gradlew assembleDebug
+
+      - name: upload
+        uses: wei/curl@v1.1.1
+        env:
+          APP_NAME: f1dashboard
+          APP_VERSION: ${{ github.sha }}
+          URL: https://nexus.n1ks.it
+          USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        with:
+          args: -u $USERNAME:$PASSWORD "$URL//service/rest/v1/components?repository=debugpub" -F "raw.directory=$APP_NAME" -F "raw.asset1=@app/build/outputs/apk/debug/app-debug.apk" -F "raw.asset1.filename=$APP_NAME-$APP_VERSION.apk"

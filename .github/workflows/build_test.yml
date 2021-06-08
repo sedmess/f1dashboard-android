@@ -1,0 +1,19 @@
+name: "test build"
+
+on:
+  push:
+    branches: [ "develop", "feature/*" ]
+  pull_request:
+    branches: [ "master", "develop" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: run_tests
+        uses: vgaidarji/android-github-actions-build@v1.0.1
+        with:
+          args: ./gradlew test
