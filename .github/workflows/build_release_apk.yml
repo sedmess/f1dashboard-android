@@ -1,0 +1,68 @@
+name: "build release apk"
+
+on:
+  push:
+    tags: [ "v*" ]
+
+jobs:
+  buildRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: prepare_vars
+        id: prepare
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=tag_short::${GITHUB_REF##*/}"
+
+      - name: setup_java
+        uses: actions/setup-java@v2
+        with:
+          distribution: zulu
+          java-version: 11
+
+      - name: assemble
+        run: ./gradlew assembleRelease
+
+      - name: sign
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        env:
+          BUILD_TOOLS_VERSION: 30.0.3
+        with:
+          releaseDirectory:  app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGING_PASSWORD }}
+          keyPassword: ${{ secrets.SIGING_PASSWORD }}
+
+      - name: apk_rename
+        id: rename
+        env:
+          APP_NAME: f1dashboard
+          APP_VERSION: ${{ steps.prepare.outputs.tag_short }}
+        run: |
+          mv ${{steps.sign.outputs.signedReleaseFile}} $APP_NAME-$APP_VERSION.apk
+          echo "::set-output name=file_name::$APP_NAME-$APP_VERSION.apk"
+
+      - name: upload_nexus
+        uses: wei/curl@v1.1.1
+        env:
+          APP_NAME: f1dashboard
+          APP_VERSION: ${{ steps.prepare.outputs.tag_short }}
+          URL: https://nexus.n1ks.it
+          USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        with:
+          args: -u $USERNAME:$PASSWORD "$URL//service/rest/v1/components?repository=public" -F "raw.directory=$APP_NAME" -F "raw.asset1=@${{steps.rename.outputs.file_name}}" -F "raw.asset1.filename=$APP_NAME-$APP_VERSION.apk"
+
+
+      - name: release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: ${{ steps.prepare.outputs.tag_short }}
+          files: ${{steps.rename.outputs.file_name}}
