@@ -2,7 +2,11 @@
     <string name="app_name">f1dashboard</string>
     <string name="listener_notification_channel">F1 Dashboard</string>
     <string name="listener_notification_text">F1 Dashboard listen…</string>
-    <string name="listener_notification_stop_text">Stop</string>
+    <string name="crashReportTitle">It\'s crashed</string>
+    <string name="crashReportText">You can send your crash info</string>
+    <string name="crashReportSendCaption">Send</string>
+    <string name="crashReportCancelCaption">Cancel</string>
+    <string name="crashReportShareCaption">Crash report</string>
     <string name="lapCaption">lap</string>
     <string name="fuelCaption">fuel</string>
     <string name="ersCaption">ers</string>

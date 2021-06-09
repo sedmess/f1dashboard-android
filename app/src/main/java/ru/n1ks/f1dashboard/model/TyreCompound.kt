@@ -1,11 +1,30 @@
 package ru.n1ks.f1dashboard.model
 
-enum class TyreCompound {
-    C1, C2, C3, C4, C5, Inter, Wet, DryClassic, WetClassic, SuperSoftF2, SoftF2, MediumF2, HardF2, WetF2, Soft, Medium, Hard;
+import ru.n1ks.f1dashboard.R
 
-    @ExperimentalUnsignedTypes
+enum class TyreCompound(val char: Char, val color: Int) {
+    X('X', R.color.white),
+    C1('⑴', R.color.tyreH),
+    C2('⑵', R.color.tyreM),
+    C3('⑶', R.color.tyreS),
+    C4('⑷', R.color.tyreSS),
+    C5('⑸', R.color.tyreUS),
+    Inter('Ⓘ', R.color.tyreInter),
+    Wet('Ⓦ', R.color.tyreWet),
+    DryClassic('ⓓ', R.color.tyreDry),
+    WetClassic('ⓦ', R.color.tyreWet),
+    SuperSoftF2('Ⓠ', R.color.tyreUS),
+    SoftF2('Ⓢ', R.color.tyreSS),
+    MediumF2('Ⓜ', R.color.tyreS),
+    HardF2('Ⓗ', R.color.tyreM),
+    WetF2('Ⓦ', R.color.tyreWet),
+    Soft('Ⓢ', R.color.tyreSS),
+    Medium('Ⓜ', R.color.tyreS),
+    Hard('Ⓗ', R.color.tyreM),
+    ;
+
     companion object {
-        fun defineActualByCode(code: UByte) = when (code.toInt()) {
+        fun defineActualByCode(code: Byte) = when (code.toInt()) {
             16 -> C5
             17 -> C4
             18 -> C3
@@ -20,10 +39,10 @@ enum class TyreCompound {
             13 -> MediumF2
             14 -> HardF2
             15 -> WetF2
-            else -> throw IllegalStateException("unknown code $code")
+            else -> X
         }
 
-        fun defineVisualByCode(code: UByte) = when (code.toInt()) {
+        fun defineVisualByCode(code: Byte) = when (code.toInt()) {
             16 -> Soft
             17 -> Medium
             18 -> Hard
@@ -36,7 +55,7 @@ enum class TyreCompound {
             13 -> MediumF2
             14 -> HardF2
             15 -> WetF2
-            else -> throw IllegalStateException("unknown code $code")
+            else -> X
         }
     }
 }

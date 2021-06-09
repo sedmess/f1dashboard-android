@@ -17,8 +17,8 @@
         <TableLayout
             android:layout_width="0dip"
             android:layout_height="match_parent"
-            android:layout_margin="16sp"
-            android:layout_weight="0.25">
+            android:layout_margin="8sp"
+            android:layout_weight="0.23">
 
             <TableRow
                 android:layout_width="match_parent"
@@ -187,8 +187,8 @@
         <LinearLayout
             android:layout_width="0dip"
             android:layout_height="match_parent"
-            android:layout_margin="16sp"
-            android:layout_weight="0.5"
+            android:layout_margin="8sp"
+            android:layout_weight="0.52"
             android:orientation="vertical">
 
             <LinearLayout
@@ -196,7 +196,7 @@
                 android:layout_height="0dip"
                 android:layout_gravity="top"
                 android:layout_margin="16sp"
-                android:layout_weight="0.25"
+                android:layout_weight="0.15"
                 android:orientation="horizontal">
 
                 <TextView
@@ -241,7 +241,53 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
                 android:layout_gravity="center"
-                android:layout_weight="0.5">
+                android:layout_weight="0.65">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@color/ahead2">
+
+                    <TextView
+                        android:id="@+id/ahead2DriverValue"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.4"
+                        android:text="X"
+                        android:gravity="center_vertical"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/ahead2TimeValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.45"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/ahead2TyreValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.15"
+                        android:gravity="center"
+                        android:text="X"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
+                </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -250,25 +296,38 @@
                     android:background="@color/ahead">
 
                     <TextView
-                        android:id="@+id/aheadDeltaValue"
+                        android:id="@+id/aheadDriverValue"
                         android:layout_width="0dip"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.5"
-                        android:text="-X.XXX"
-                        android:textAlignment="textStart"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.4"
+                        android:text="X"
+                        android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/aheadTimeValue"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
-                        android:layout_weight="0.5"
+                        android:layout_weight="0.45"
                         android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/aheadTyreValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.15"
+                        android:gravity="center"
+                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -282,23 +341,36 @@
                     <TextView
                         android:id="@+id/myBestValue"
                         android:layout_width="0dip"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.5"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.4"
                         android:text="X:XX.XXX"
-                        android:textAlignment="textStart"
+                        android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/myTimeValue"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
-                        android:layout_weight="0.5"
+                        android:layout_weight="0.45"
                         android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/myTyreValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.15"
+                        android:gravity="center"
+                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -312,29 +384,88 @@
                     android:background="@color/behind">
 
                     <TextView
-                        android:id="@+id/behindDeltaValue"
+                        android:id="@+id/behindDriverValue"
                         android:layout_width="0dip"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.5"
-                        android:text="+X.XXX"
-                        android:textAlignment="textStart"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.40"
+                        android:text="X"
+                        android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/fontSize"
-                        android:typeface="normal" />
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace" />
 
                     <TextView
                         android:id="@+id/behindTimeValue"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
-                        android:layout_weight="0.5"
+                        android:layout_weight="0.45"
                         android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/behindTyreValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.15"
+                        android:gravity="center"
+                        android:text="X"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
                         android:typeface="normal" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@color/behind2">
+
+                    <TextView
+                        android:id="@+id/behind2DriverValue"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.4"
+                        android:text="X"
+                        android:gravity="center_vertical"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/behind2TimeValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.45"
+                        android:text="X:XX.XXX"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="monospace" />
+
+                    <TextView
+                        android:id="@+id/behind2TyreValue"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8sp"
+                        android:layout_weight="0.15"
+                        android:gravity="center"
+                        android:text="X"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/fontSize"
+                        android:typeface="normal" />
+
                 </TableRow>
 
                 <TableRow
@@ -362,7 +493,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
-                android:layout_weight="0.25"
+                android:layout_weight="0.2"
                 android:orientation="vertical">
 
                 <TextView
@@ -389,7 +520,7 @@
         <LinearLayout
             android:layout_width="0dip"
             android:layout_height="match_parent"
-            android:layout_margin="16sp"
+            android:layout_margin="8sp"
             android:layout_weight="0.25"
             android:orientation="vertical">
 
@@ -439,10 +570,16 @@
                     <TextView
                         android:id="@+id/wearFLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.10"
+                        android:layout_weight="0.20"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
+                        android:text="X"
+                        android:gravity="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace"
                         >
 
                     </TextView>
@@ -450,7 +587,7 @@
                     <TextView
                         android:id="@+id/surfaceFLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -461,7 +598,7 @@
                     <TextView
                         android:id="@+id/innerFLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -472,7 +609,7 @@
                     <TextView
                         android:id="@+id/innerFRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -483,7 +620,7 @@
                     <TextView
                         android:id="@+id/surfaceFRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -494,10 +631,16 @@
                     <TextView
                         android:id="@+id/wearFRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.10"
+                        android:layout_weight="0.20"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
+                        android:text="X"
+                        android:gravity="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace"
                         >
                     </TextView>
 
@@ -511,17 +654,23 @@
                     <TextView
                         android:id="@+id/wearRLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.10"
+                        android:layout_weight="0.20"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
+                        android:text="X"
+                        android:gravity="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace"
                         >
                     </TextView>
 
                     <TextView
                         android:id="@+id/surfaceRLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -531,7 +680,7 @@
                     <TextView
                         android:id="@+id/innerRLValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -541,7 +690,7 @@
                     <TextView
                         android:id="@+id/innerRRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -551,7 +700,7 @@
                     <TextView
                         android:id="@+id/surfaceRRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.20"
+                        android:layout_weight="0.15"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
@@ -561,10 +710,16 @@
                     <TextView
                         android:id="@+id/wearRRValue"
                         android:layout_width="0dip"
-                        android:layout_weight="0.10"
+                        android:layout_weight="0.20"
                         android:layout_height="match_parent"
                         android:background="@color/inop"
                         android:layout_margin="2sp"
+                        android:text="X"
+                        android:gravity="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/smartFortSize"
+                        android:typeface="monospace"
                         >
                     </TextView>
 

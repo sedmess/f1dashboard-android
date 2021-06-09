@@ -8,48 +8,115 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.toSingle
-import ru.n1ks.f1dashboard.R
-import ru.n1ks.f1dashboard.minusOne
+import ru.n1ks.f1dashboard.*
 import ru.n1ks.f1dashboard.model.*
-import ru.n1ks.f1dashboard.plusOne
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
+
+
+interface ViewProvider {
+
+    fun <T : View> findViewById(id: Int): T
+    fun getDrawable(id: Int): Drawable
+    fun getColor(id: Int): Int
+}
 
 enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
 }
 
-@ExperimentalUnsignedTypes
 data class CompetitorDriver(
     val code: Int,
     val driver: ParticipantData.Driver
 )
 
-@ExperimentalUnsignedTypes
 data class Competitor(
     val id: Int,
     val position: Int,
     val lastLapTime: Float,
     val bestLapTime: Float,
     val lap: Int,
+    val visualTyreType: TyreCompound,
+    val actualTyreType: TyreCompound,
+    val tyreAge: Int,
     val driver: CompetitorDriver?
-//    val tyreType: TyreCompound
-)
+) {
 
-data class TyreState(
+    val positionString: String
+        get() = position.toString().padEnd(2, ' ')
+
+    val isTyresNew: Boolean
+        get() = tyreAge < 3
+
+    val tyreTypeValue: String
+        get() {
+            return if (visualTyreType == actualTyreType) {
+                visualTyreType.char.toString()
+            } else {
+                when {
+                    visualTyreType == TyreCompound.X -> actualTyreType.char.toString()
+                    actualTyreType == TyreCompound.X -> visualTyreType.char.toString()
+                    else -> actualTyreType.char.toString() + visualTyreType.char.toString()
+                }
+            }
+        }
+
+    val tyreTyreColor: Int
+        get() = if (visualTyreType != TyreCompound.X) visualTyreType.color else actualTyreType.color
+
+    fun inBound(size: Int): Boolean = id in 0 until size
+}
+
+data class TyreStateField(
     val wear: Int,
     val innerTemperature: Int,
     val outerTemperature: Int
-)
+) {
 
-interface ViewProvider {
+    val wearColor: Int
+        get() {
+            return when {
+                wear < 5 -> R.color.wear0
+                wear < 15 -> R.color.wear10
+                wear < 23 -> R.color.wear20
+                wear < 32 -> R.color.wear30
+                wear < 40 -> R.color.wear40
+                wear < 50 -> R.color.wear50
+                wear < 60 -> R.color.wear60
+                wear < 70 -> R.color.wear70
+                wear < 80 -> R.color.wear80
+                wear < 90 -> R.color.wear90
+                wear <= 100 -> R.color.wear100
+                else -> R.color.inop
+            }
+        }
 
-    fun findViewById(id: Int): View
-    fun getDrawable(id: Int): Drawable
-    fun getColor(id: Int): Int
+    val wearValue: String
+        get() {
+            return if (wear < 0 || wear > 99) {
+                "XX"
+            } else {
+                wear.toString()
+            }
+        }
+
+    val innerTemperatureColor: Int
+        get() = defineTempColor(innerTemperature)
+
+    val outerTemperatureColor: Int
+        get() = defineTempColor(outerTemperature)
+
+    private fun defineTempColor(temp: Int): Int {
+        return when {
+            temp < 82 -> R.color.lowTemp
+            temp < 103 -> R.color.normalTemp
+            temp < 110 -> R.color.warmTemp
+            else -> R.color.highTemp
+        }
+    }
 }
 
-@ExperimentalUnsignedTypes
 class LiveDataField<T>(
     val name: String,
     private var data: T,
@@ -77,45 +144,26 @@ data class DrsField(
     val isOpened: Boolean
 )
 
-@ExperimentalUnsignedTypes
 data class RivalsField(
+    val ahead2: Competitor?,
     val ahead: Competitor?,
     val player: Competitor?,
-    val behind: Competitor?
+    val behind: Competitor?,
+    val behind2: Competitor?
+)
+
+data class BestLapField(
+    val competitorId: Int,
+    val driver: ParticipantData.Driver?,
+    val bestLapTime: Float
 )
 
 data class TypesField(
-    val tyreFL: TyreState,
-    val tyreFR: TyreState,
-    val tyreRL: TyreState,
-    val tyreRR: TyreState
+    val tyreFL: TyreStateField,
+    val tyreFR: TyreStateField,
+    val tyreRL: TyreStateField,
+    val tyreRR: TyreStateField
 )
-
-private fun defineWearColor(wear: Int): Int {
-    return when {
-        wear < 5 -> R.color.wear0
-        wear < 15 -> R.color.wear10
-        wear < 23 -> R.color.wear20
-        wear < 32 -> R.color.wear30
-        wear < 40 -> R.color.wear40
-        wear < 50 -> R.color.wear50
-        wear < 60 -> R.color.wear60
-        wear < 70 -> R.color.wear70
-        wear < 80 -> R.color.wear80
-        wear < 90 -> R.color.wear90
-        wear <= 100 -> R.color.wear100
-        else -> R.color.inop
-    }
-}
-
-private fun defineTempColor(temp: Int): Int {
-    return when {
-        temp < 82 -> R.color.lowTemp
-        temp < 103 -> R.color.normalTemp
-        temp < 110 -> R.color.warmTemp
-        else -> R.color.highTemp
-    }
-}
 
 private val secondsAndMsFormat: DecimalFormat = DecimalFormat("00.000")
 private val secondsFormat: DecimalFormat = DecimalFormat("00")
@@ -123,10 +171,13 @@ private val fuelFormat: DecimalFormat = DecimalFormat("+#,#0.00;-#")
 private val timeFormatter: (Float) -> String = {
     val n1 = it.toInt() / 60
     val n2 = it % 60
-    "${n1}:${secondsAndMsFormat.format(n2)}"
+    if (n1 == 0 && n2.absoluteValue < 0.001f) {
+        "X:XX.XXX"
+    } else {
+        "${n1}:${secondsAndMsFormat.format(n2)}"
+    }
 }
 
-@ExperimentalUnsignedTypes
 class LiveData(
     private val activity: Activity,
     private val fields: Collection<LiveDataField<*>>
@@ -135,16 +186,17 @@ class LiveData(
     private val views = HashMap<Int, View>()
     private val viewProvider = object : ViewProvider {
 
-        override fun findViewById(id: Int): View =
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : View> findViewById(id: Int): T =
             views[id].let {
                 if (it == null) {
-                    val view = activity.findViewById<View>(id)
+                    val view = activity.findViewById<T>(id)
                     views[id] = view
                     view
                 } else {
                     it
                 }
-            }
+            } as T
 
         override fun getDrawable(id: Int): Drawable =
             ContextCompat.getDrawable(activity, id)!!
@@ -161,7 +213,6 @@ class LiveData(
 }
 
 @SuppressLint("SetTextI18n")
-@ExperimentalUnsignedTypes
 val LiveDataFields = listOf<LiveDataField<*>>(
     LiveDataField(
         "lapRemaining",
@@ -181,7 +232,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val lapField = findViewById(R.id.lapValue) as TextView
+            val lapField = findViewById<TextView>(R.id.lapValue)
             lapField.text = if (it.lapsCount - it.currentLap >= 0) {
                 "+${it.lapsCount - it.currentLap}"
             } else {
@@ -199,7 +250,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val fuelField = findViewById(R.id.fuelValue) as TextView
+            val fuelField = findViewById<TextView>(R.id.fuelValue)
             fuelField.text = fuelFormat.format(it)
         }
     ),
@@ -213,7 +264,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val fuelField = findViewById(R.id.fuelValue) as TextView
+            val fuelField = findViewById<TextView>(R.id.fuelValue)
             when (it) {
                 1 -> {
                     fuelField.background = getDrawable(R.color.leanMode)
@@ -240,7 +291,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val ersField = findViewById(R.id.ersValue) as TextView
+            val ersField = findViewById<TextView>(R.id.ersValue)
             ersField.text = it.toString()
             when (it) {
                 0 -> {
@@ -268,7 +319,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val bbField = findViewById(R.id.bbValue) as TextView
+            val bbField = findViewById<TextView>(R.id.bbValue)
             bbField.text = it.toString()
             bbField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
@@ -291,7 +342,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val diffField = findViewById(R.id.diffValue) as TextView
+            val diffField = findViewById<TextView>(R.id.diffValue)
             diffField.text = it.toString()
             diffField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
@@ -314,7 +365,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val recommendedGearField = findViewById(R.id.recommendedGearValue) as TextView
+            val recommendedGearField = findViewById<TextView>(R.id.recommendedGearValue)
             if (it > 0) {
                 recommendedGearField.text = it.toString()
             } else {
@@ -355,7 +406,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         onUpdateFunc = {
-            val drsField = findViewById(R.id.drsValue) as TextView
+            val drsField = findViewById<TextView>(R.id.drsValue)
             when (it.state) {
                 DrsCommonState.Unavailable -> {
                     drsField.text = "X"
@@ -386,23 +437,34 @@ val LiveDataFields = listOf<LiveDataField<*>>(
     ),
     LiveDataField(
         "rivals",
-        RivalsField(ahead = null, player = null, behind = null),
+        RivalsField(ahead2 = null, ahead = null, player = null, behind = null, behind2 = null),
         { data, packet ->
             packet.asType<LapDataPacket> { it ->
                 val playerData = it.data.items[it.header.playerCarIndex]
+                val playerIndex =
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition }
                 val rivalAheadIndex =
-                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.minusOne() }
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition minusByte Bytes.One }
                 val rivalAheadData = it.data.items.getOrNull(rivalAheadIndex)
+                val rivalAhead2Index =
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition minusByte Bytes.Two }
+                val rivalAhead2Data = it.data.items.getOrNull(rivalAhead2Index)
                 val rivalBehindIndex =
-                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition.plusOne() }
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition plusByte Bytes.One }
                 val rivalBehindData = it.data.items.getOrNull(rivalBehindIndex)
+                val rivalBehind2Index =
+                    it.data.items.indexOfFirst { item -> item.carPosition == playerData.carPosition plusByte Bytes.Two }
+                val rivalBehind2Data = it.data.items.getOrNull(rivalBehind2Index)
 
                 val player = Competitor(
-                    id = -1,
+                    id = playerIndex,
                     position = playerData.carPosition.toInt(),
                     lastLapTime = playerData.lastLapTime,
                     bestLapTime = playerData.bestLapTime,
                     lap = playerData.currentLapNum.toInt(),
+                    visualTyreType = data.player?.visualTyreType ?: TyreCompound.X,
+                    actualTyreType = data.player?.actualTyreType ?: TyreCompound.X,
+                    tyreAge = data.player?.tyreAge ?: Int.MAX_VALUE,
                     driver = null
                 )
                 val ahead = rivalAheadData?.let {
@@ -412,7 +474,23 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
+                        visualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.actualTyreType else TyreCompound.X,
+                        tyreAge = data.ahead?.tyreAge ?: Int.MAX_VALUE,
                         driver = if (data.ahead?.id == rivalAheadIndex) data.ahead.driver else null
+                    )
+                }
+                val ahead2 = rivalAhead2Data?.let {
+                    Competitor(
+                        id = rivalAhead2Index,
+                        position = it.carPosition.toInt(),
+                        lastLapTime = it.lastLapTime,
+                        bestLapTime = it.bestLapTime,
+                        lap = it.currentLapNum.toInt(),
+                        visualTyreType = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.actualTyreType else TyreCompound.X,
+                        tyreAge = data.ahead2?.tyreAge ?: Int.MAX_VALUE,
+                        driver = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.driver else null
                     )
                 }
                 val behind = rivalBehindData?.let {
@@ -422,15 +500,31 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         lastLapTime = it.lastLapTime,
                         bestLapTime = it.bestLapTime,
                         lap = it.currentLapNum.toInt(),
+                        visualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.actualTyreType else TyreCompound.X,
+                        tyreAge = data.behind?.tyreAge ?: Int.MAX_VALUE,
                         driver = if (data.behind?.id == rivalBehindIndex) data.behind.driver else null
                     )
                 }
-                return@LiveDataField RivalsField(ahead, player, behind)
+                val behind2 = rivalBehind2Data?.let {
+                    Competitor(
+                        id = rivalBehind2Index,
+                        position = it.carPosition.toInt(),
+                        lastLapTime = it.lastLapTime,
+                        bestLapTime = it.bestLapTime,
+                        lap = it.currentLapNum.toInt(),
+                        visualTyreType = if (data.behind2?.id == rivalBehind2Index) data.behind2.visualTyreType else TyreCompound.X,
+                        actualTyreType = if (data.behind2?.id == rivalBehind2Index) data.behind2.actualTyreType else TyreCompound.X,
+                        tyreAge = data.behind2?.tyreAge ?: Int.MAX_VALUE,
+                        driver = if (data.behind2?.id == rivalBehind2Index) data.behind2.driver else null
+                    )
+                }
+                return@LiveDataField RivalsField(ahead2, ahead, player, behind, behind2)
             }
             packet.asType<ParticipantDataPacket> {
                 var newData = data
-                if (data.ahead != null && data.ahead.id >= 0 && data.ahead.id < it.data.items.size) {
-                    newData = data.copy(
+                if (data.ahead?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
                         ahead = data.ahead.copy(
                             driver = CompetitorDriver(
                                 it.data.items[data.ahead.id].raceNumber.toInt(),
@@ -439,7 +533,17 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         )
                     )
                 }
-                if (data.behind != null && data.behind.id >= 0 && data.behind.id < it.data.items.size) {
+                if (data.ahead2?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        ahead2 = data.ahead2.copy(
+                            driver = CompetitorDriver(
+                                it.data.items[data.ahead2.id].raceNumber.toInt(),
+                                it.data.items[data.ahead2.id].driver
+                            )
+                        )
+                    )
+                }
+                if (data.behind?.inBound(it.data.items.size) == true) {
                     newData = newData.copy(
                         behind = data.behind.copy(
                             driver = CompetitorDriver(
@@ -449,100 +553,305 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                         )
                     )
                 }
+                if (data.behind2?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        behind2 = data.behind2.copy(
+                            driver = CompetitorDriver(
+                                it.data.items[data.behind2.id].raceNumber.toInt(),
+                                it.data.items[data.behind2.id].driver
+                            )
+                        )
+                    )
+                }
+                return@LiveDataField newData
+            }
+            packet.asType<CarStatusDataPacket> {
+                var newData = data
+                if (data.player?.inBound(it.data.items.size) == true) {
+                    newData = data.copy(
+                        player = data.player.copy(
+                            visualTyreType = it.data.items[data.player.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.player.id].actualTyreCompound,
+                            tyreAge = it.data.items[data.player.id].tyresAgeLaps.toInt()
+                        )
+                    )
+                }
+                if (data.ahead?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        ahead = data.ahead.copy(
+                            visualTyreType = it.data.items[data.ahead.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.ahead.id].actualTyreCompound,
+                            tyreAge = it.data.items[data.ahead.id].tyresAgeLaps.toInt()
+                        )
+                    )
+                }
+                if (data.ahead2?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        ahead2 = data.ahead2.copy(
+                            visualTyreType = it.data.items[data.ahead2.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.ahead2.id].actualTyreCompound,
+                            tyreAge = it.data.items[data.ahead2.id].tyresAgeLaps.toInt()
+                        )
+                    )
+                }
+                if (data.behind?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        behind = data.behind.copy(
+                            visualTyreType = it.data.items[data.behind.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.behind.id].actualTyreCompound,
+                            tyreAge = it.data.items[data.behind.id].tyresAgeLaps.toInt()
+                        )
+                    )
+                }
+                if (data.behind2?.inBound(it.data.items.size) == true) {
+                    newData = newData.copy(
+                        behind2 = data.behind2.copy(
+                            visualTyreType = it.data.items[data.behind2.id].visualTyreCompound,
+                            actualTyreType = it.data.items[data.behind2.id].actualTyreCompound,
+                            tyreAge = it.data.items[data.behind2.id].tyresAgeLaps.toInt()
+                        )
+                    )
+                }
                 return@LiveDataField newData
             }
             return@LiveDataField data
         },
         { context ->
-            val aheadDeltaField = findViewById(R.id.aheadDeltaValue) as TextView
-            val aheadTimeField = findViewById(R.id.aheadTimeValue) as TextView
+            run {
+                val aheadDriverField = findViewById<TextView>(R.id.aheadDriverValue)
+                val aheadTimeField = findViewById<TextView>(R.id.aheadTimeValue)
+                val aheadTyreField = findViewById<TextView>(R.id.aheadTyreValue)
 
-            if (context.ahead != null && context.ahead.position > 0) {
-                aheadDeltaField.text =
-                    context.ahead.position.toString() + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
-                aheadTimeField.text = timeFormatter(context.ahead.lastLapTime)
+                if (context.ahead != null && context.ahead.position > 0) {
+                    aheadDriverField.text =
+                        context.ahead.positionString + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    aheadTimeField.text =
+                        timeFormatter(context.ahead.lastLapTime)
 
-                when {
-                    context.ahead.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> aheadTimeField.setTextColor(
-                        getColor(R.color.timeBetter)
-                    )
-                    context.ahead.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> aheadTimeField.setTextColor(
-                        getColor(R.color.timeWorse)
-                    )
-                    else -> aheadTimeField.setTextColor(getColor(R.color.white))
-                }
-            } else {
-                aheadDeltaField.text = "X"
-                aheadTimeField.text = "X"
-                aheadTimeField.setTextColor(getColor(R.color.white))
-            }
-
-            val playerBestTimeField = findViewById(R.id.myBestValue) as TextView
-            val playerLastTimeField = findViewById(R.id.myTimeValue) as TextView
-
-            if (context.player != null) {
-                playerBestTimeField.text = timeFormatter(context.player.bestLapTime)
-                playerLastTimeField.text = timeFormatter(context.player.lastLapTime)
-
-                if (context.player.lap < context.ahead?.lap ?: context.player.lap) {
-                    playerLastTimeField.setTextColor(getColor(R.color.timeIrrelevant))
-                } else {
-                    playerLastTimeField.setTextColor(getColor(R.color.white))
-                }
-            } else {
-                playerBestTimeField.text = "X"
-                playerLastTimeField.text = "X"
-            }
-
-            val behindDeltaField = findViewById(R.id.behindDeltaValue) as TextView
-            val behindTimeField = findViewById(R.id.behindTimeValue) as TextView
-
-            if (context.behind != null) {
-                behindDeltaField.text =
-                    context.behind.position.toString() + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
-                behindTimeField.text = timeFormatter(context.behind.lastLapTime)
-
-                if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
-                    behindTimeField.setTextColor(getColor(R.color.timeIrrelevant))
-                } else {
                     when {
-                        context.behind.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> behindTimeField.setTextColor(
+                        context.ahead.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> aheadTimeField.setTextColor(
                             getColor(R.color.timeBetter)
                         )
-                        context.behind.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> behindTimeField.setTextColor(
+                        context.ahead.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> aheadTimeField.setTextColor(
                             getColor(R.color.timeWorse)
                         )
-                        else -> behindTimeField.setTextColor(getColor(R.color.white))
+                        else -> aheadTimeField.setTextColor(getColor(R.color.white))
                     }
+
+                    aheadTyreField.text = context.ahead.tyreTypeValue
+                    aheadTyreField.setTextColor(getColor(context.ahead.tyreTyreColor))
+                    aheadTyreField.background =
+                        if (context.ahead.isTyresNew) getDrawable(R.color.tyreNew) else null
+                } else {
+                    aheadDriverField.text = "XX"
+                    aheadTimeField.text = "X:XX.XXX"
+                    aheadTimeField.setTextColor(getColor(R.color.white))
+                    aheadTyreField.text = "X"
+                    aheadTyreField.setTextColor(getColor(R.color.white))
+                    aheadTyreField.background = null
                 }
-            } else {
-                behindDeltaField.text = "X"
-                behindTimeField.text = "X"
-                behindTimeField.setTextColor(getColor(R.color.white))
+            }
+
+            run {
+                val ahead2DriverField = findViewById<TextView>(R.id.ahead2DriverValue)
+                val ahead2TimeField = findViewById<TextView>(R.id.ahead2TimeValue)
+                val ahead2TyreField = findViewById<TextView>(R.id.ahead2TyreValue)
+
+                if (context.ahead2 != null && context.ahead2.position > 0) {
+                    ahead2DriverField.text =
+                        context.ahead2.positionString + context.ahead2.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    ahead2TimeField.text =
+                        timeFormatter(context.ahead2.lastLapTime)
+
+                    when {
+                        context.ahead2.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> ahead2TimeField.setTextColor(
+                            getColor(R.color.timeBetter)
+                        )
+                        context.ahead2.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> ahead2TimeField.setTextColor(
+                            getColor(R.color.timeWorse)
+                        )
+                        else -> ahead2TimeField.setTextColor(getColor(R.color.white))
+                    }
+
+                    ahead2TyreField.text = context.ahead2.tyreTypeValue
+                    ahead2TyreField.setTextColor(getColor(context.ahead2.tyreTyreColor))
+                    ahead2TyreField.background =
+                        if (context.ahead2.isTyresNew) getDrawable(R.color.tyreNew) else null
+                } else {
+                    ahead2DriverField.text = "XX"
+                    ahead2TimeField.text = "X:XX.XXX"
+                    ahead2TimeField.setTextColor(getColor(R.color.white))
+                    ahead2TyreField.text = "X"
+                    ahead2TyreField.setTextColor(getColor(R.color.white))
+                    ahead2TyreField.background = null
+                }
+            }
+
+            run {
+                val playerBestTimeField = findViewById<TextView>(R.id.myBestValue)
+                val playerLastTimeField = findViewById<TextView>(R.id.myTimeValue)
+                val playerTyreField = findViewById<TextView>(R.id.myTyreValue)
+
+                if (context.player != null) {
+                    playerBestTimeField.text = timeFormatter(context.player.bestLapTime)
+                    playerLastTimeField.text = timeFormatter(context.player.lastLapTime)
+
+                    if (context.player.lap < context.ahead?.lap ?: context.player.lap) {
+                        playerLastTimeField.setTextColor(getColor(R.color.timeIrrelevant))
+                    } else {
+                        playerLastTimeField.setTextColor(getColor(R.color.white))
+                    }
+
+                    playerTyreField.text = context.player.tyreTypeValue
+                    playerTyreField.setTextColor(getColor(context.player.tyreTyreColor))
+                    playerTyreField.background =
+                        if (context.player.isTyresNew) getDrawable(R.color.tyreNew) else null
+                } else {
+                    playerBestTimeField.text = "X:XX.XXX"
+                    playerLastTimeField.text = "X:XX.XXX"
+                    playerTyreField.text = "X"
+                    playerTyreField.setTextColor(getColor(R.color.white))
+                    playerTyreField.background = null
+                }
+            }
+
+            run {
+                val behindDriverField = findViewById<TextView>(R.id.behindDriverValue)
+                val behindTimeField = findViewById<TextView>(R.id.behindTimeValue)
+                val behindTyreFiled = findViewById<TextView>(R.id.behindTyreValue)
+
+                if (context.behind != null) {
+                    behindDriverField.text =
+                        context.behind.positionString + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    behindTimeField.text = timeFormatter(context.behind.lastLapTime)
+
+                    if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
+                        behindTimeField.setTextColor(getColor(R.color.timeIrrelevant))
+                    } else {
+                        when {
+                            context.behind.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> behindTimeField.setTextColor(
+                                getColor(R.color.timeBetter)
+                            )
+                            context.behind.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> behindTimeField.setTextColor(
+                                getColor(R.color.timeWorse)
+                            )
+                            else -> behindTimeField.setTextColor(getColor(R.color.white))
+                        }
+                    }
+
+                    behindTyreFiled.text = context.behind.tyreTypeValue
+                    behindTyreFiled.setTextColor(getColor(context.behind.tyreTyreColor))
+                    behindTyreFiled.background =
+                        if (context.behind.isTyresNew) getDrawable(R.color.tyreNew) else null
+
+                } else {
+                    behindDriverField.text = "XX"
+                    behindTimeField.text = "X:XX.XXX"
+                    behindTimeField.setTextColor(getColor(R.color.white))
+                    behindTyreFiled.text = "X"
+                    behindTyreFiled.setTextColor(getColor(R.color.white))
+                    behindTyreFiled.background = null
+                }
+            }
+
+            run {
+                val behind2DriverField = findViewById<TextView>(R.id.behind2DriverValue)
+                val behind2TimeField = findViewById<TextView>(R.id.behind2TimeValue)
+                val behind2TyreFiled = findViewById<TextView>(R.id.behind2TyreValue)
+
+                if (context.behind2 != null) {
+                    behind2DriverField.text =
+                        context.behind2.positionString + context.behind2.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                    behind2TimeField.text = timeFormatter(context.behind2.lastLapTime)
+
+                    if (context.behind2.lap < context.player?.lap ?: context.behind2.lap) {
+                        behind2TimeField.setTextColor(getColor(R.color.timeIrrelevant))
+                    } else {
+                        when {
+                            context.behind2.lastLapTime < context.player?.lastLapTime ?: Float.MIN_VALUE -> behind2TimeField.setTextColor(
+                                getColor(R.color.timeBetter)
+                            )
+                            context.behind2.lastLapTime > context.player?.lastLapTime ?: Float.MAX_VALUE -> behind2TimeField.setTextColor(
+                                getColor(R.color.timeWorse)
+                            )
+                            else -> behind2TimeField.setTextColor(getColor(R.color.white))
+                        }
+                    }
+
+                    behind2TyreFiled.text = context.behind2.tyreTypeValue
+                    behind2TyreFiled.setTextColor(getColor(context.behind2.tyreTyreColor))
+                    behind2TyreFiled.background =
+                        if (context.behind2.isTyresNew) getDrawable(R.color.tyreNew) else null
+
+                } else {
+                    behind2DriverField.text = "XX"
+                    behind2TimeField.text = "X:XX.XXX"
+                    behind2TimeField.setTextColor(getColor(R.color.white))
+                    behind2TyreFiled.text = "X"
+                    behind2TyreFiled.setTextColor(getColor(R.color.white))
+                    behind2TyreFiled.background = null
+                }
             }
         }
     ),
     LiveDataField(
         "bestTime",
-        0.0f,
+        BestLapField(
+            competitorId = -1,
+            driver = null,
+            bestLapTime = 0.0f
+        ),
         { data, packet ->
             packet.asType<LapDataPacket> {
-                return@LiveDataField it.data.items.filter { it.bestLapTime > 0 }
-                    .minOfOrNull { it.bestLapTime } ?: 0.0f
+                val bestLapTime = it.data.items.filter { it.bestLapTime > 0 }
+                    .minOfOrNull { it.bestLapTime }
+                if (bestLapTime != null && (data.competitorId == -1 || data.bestLapTime > bestLapTime)) {
+                    return@LiveDataField data.copy(
+                        competitorId = -1,
+                        driver = null,
+                        bestLapTime = it.data.items.filter { it.bestLapTime > 0 }
+                            .minOfOrNull { it.bestLapTime } ?: 0.0f
+                    )
+                }
+            }
+            packet.asType<EventDataPacket> {
+                if (it.data.eventType == EventDetails.Type.SessionStarted) {
+                    return@LiveDataField BestLapField(
+                        competitorId = -1,
+                        driver = null,
+                        bestLapTime = 0.0f
+                    )
+                }
+                it.data.asType<FastestLapData> { event ->
+                    val cid = event.vehicleIdx.toInt()
+                    return@LiveDataField data.copy(
+                        competitorId = cid,
+                        driver = if (data.competitorId == cid) data.driver else null,
+                        bestLapTime = event.lapTime
+                    )
+                }
+            }
+            packet.asType<ParticipantDataPacket> {
+                if (data.competitorId >= 0 && data.competitorId < it.data.items.size) {
+                    return@LiveDataField data.copy(
+                        driver = it.data.items[data.competitorId].driver
+                    )
+                }
             }
             return@LiveDataField data
         },
         {
-            (findViewById(R.id.bestSessionTime) as TextView).text = timeFormatter(it)
+            (findViewById(R.id.bestSessionTime) as TextView).text =
+                timeFormatter(it.bestLapTime) + " " + (it.driver?.name ?: "")
         }
     ),
     LiveDataField(
         "tyres",
         TypesField(
-            tyreFL = TyreState(0, 0, 0),
-            tyreFR = TyreState(0, 0, 0),
-            tyreRL = TyreState(0, 0, 0),
-            tyreRR = TyreState(0, 0, 0)
+            tyreFL = TyreStateField(0, 0, 0),
+            tyreFR = TyreStateField(0, 0, 0),
+            tyreRL = TyreStateField(0, 0, 0),
+            tyreRR = TyreStateField(0, 0, 0)
         ),
         { data, packet ->
             packet.asType<CarTelemetryDataPacket> {
@@ -614,32 +923,40 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            findViewById(R.id.wearFLValue).background =
-                getDrawable(defineWearColor(it.tyreFL.wear))
-            findViewById(R.id.wearFRValue).background =
-                getDrawable(defineWearColor(it.tyreFR.wear))
-            findViewById(R.id.wearRLValue).background =
-                getDrawable(defineWearColor(it.tyreRL.wear))
-            findViewById(R.id.wearRRValue).background =
-                getDrawable(defineWearColor(it.tyreRR.wear))
+            findViewById<TextView>(R.id.wearFLValue).also { view ->
+                view.background = getDrawable(it.tyreFL.wearColor)
+                view.text = it.tyreFL.wearValue
+            }
+            findViewById<TextView>(R.id.wearFRValue).also { view ->
+                view.background = getDrawable(it.tyreFR.wearColor)
+                view.text = it.tyreFR.wearValue
+            }
+            findViewById<TextView>(R.id.wearRLValue).also { view ->
+                view.background = getDrawable(it.tyreRL.wearColor)
+                view.text = it.tyreRL.wearValue
+            }
+            findViewById<TextView>(R.id.wearRRValue).also { view ->
+                view.background = getDrawable(it.tyreRR.wearColor)
+                view.text = it.tyreRR.wearValue
+            }
 
-            findViewById(R.id.surfaceFLValue).background =
-                getDrawable(defineTempColor(it.tyreFL.outerTemperature))
-            findViewById(R.id.surfaceFRValue).background =
-                getDrawable(defineTempColor(it.tyreFR.outerTemperature))
-            findViewById(R.id.surfaceRLValue).background =
-                getDrawable(defineTempColor(it.tyreRL.outerTemperature))
-            findViewById(R.id.surfaceRRValue).background =
-                getDrawable(defineTempColor(it.tyreRR.outerTemperature))
+            findViewById<View>(R.id.surfaceFLValue).background =
+                getDrawable(it.tyreFL.outerTemperatureColor)
+            findViewById<View>(R.id.surfaceFRValue).background =
+                getDrawable(it.tyreFR.outerTemperatureColor)
+            findViewById<View>(R.id.surfaceRLValue).background =
+                getDrawable(it.tyreRL.outerTemperatureColor)
+            findViewById<View>(R.id.surfaceRRValue).background =
+                getDrawable(it.tyreRR.outerTemperatureColor)
 
-            findViewById(R.id.innerFLValue).background =
-                getDrawable(defineTempColor(it.tyreFL.innerTemperature))
-            findViewById(R.id.innerFRValue).background =
-                getDrawable(defineTempColor(it.tyreFR.innerTemperature))
-            findViewById(R.id.innerRLValue).background =
-                getDrawable(defineTempColor(it.tyreRL.innerTemperature))
-            findViewById(R.id.innerRRValue).background =
-                getDrawable(defineTempColor(it.tyreRR.innerTemperature))
+            findViewById<View>(R.id.innerFLValue).background =
+                getDrawable(it.tyreFL.innerTemperatureColor)
+            findViewById<View>(R.id.innerFRValue).background =
+                getDrawable(it.tyreFR.innerTemperatureColor)
+            findViewById<View>(R.id.innerRLValue).background =
+                getDrawable(it.tyreRL.innerTemperatureColor)
+            findViewById<View>(R.id.innerRRValue).background =
+                getDrawable(it.tyreRR.innerTemperatureColor)
         }
     ),
     LiveDataField(
@@ -655,8 +972,8 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val frontLeftWingField = findViewById(R.id.frontWingLeftDamage) as TextView
-            val frontRightWingField = findViewById(R.id.frontWingRightDamage) as TextView
+            val frontLeftWingField = findViewById<TextView>(R.id.frontWingLeftDamage)
+            val frontRightWingField = findViewById<TextView>(R.id.frontWingRightDamage)
             if (it[0] > 0) {
                 frontLeftWingField.text = it[0].toString()
                 frontLeftWingField.background = getDrawable(R.color.warn)
@@ -683,7 +1000,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val rearWingField = findViewById(R.id.rearWingDamage) as TextView
+            val rearWingField = findViewById<TextView>(R.id.rearWingDamage)
             if (it > 0) {
                 rearWingField.text = it.toString()
                 rearWingField.background = getDrawable(R.color.warn)
@@ -703,7 +1020,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val engineField = findViewById(R.id.engineTempValue) as TextView
+            val engineField = findViewById<TextView>(R.id.engineTempValue)
             engineField.text = it.toString()
             when {
                 it >= 130 -> {
@@ -745,8 +1062,10 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         0,
         { data, _ -> data + 1 },
         {
-            val debugField = findViewById(R.id.debugFrameCount) as TextView
-            debugField.text = it.toString()
+            if (it % 100 == 0) {
+                val debugField = findViewById(R.id.debugFrameCount) as TextView
+                debugField.text = it.toString()
+            }
         }
     )
 )
