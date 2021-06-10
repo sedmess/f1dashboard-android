@@ -9,11 +9,7 @@ import android.util.Log
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
-import ru.n1ks.f1dashboard.model.TelemetryData
-import ru.n1ks.f1dashboard.model.TelemetryPacket
-import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
 import java.net.*
-import java.nio.ByteBuffer
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
@@ -46,7 +42,7 @@ class ListenerService : Service() {
 
     private val binder = Binder()
     private var socket: DatagramSocket? = null
-    private var messageFlow: Flowable<TelemetryPacket<out TelemetryData>>? = null
+    private var messageFlow: Flowable<DatagramPacket>? = null
 
     override fun onBind(intent: Intent): IBinder {
         Log.d(TAG, "start")
@@ -61,7 +57,7 @@ class ListenerService : Service() {
         Log.d(TAG, "stopping")
 
         closeSocket()
-        
+
         socket = null
         messageFlow = null
 
@@ -108,7 +104,10 @@ class ListenerService : Service() {
                     synchronized(droppedLastTimestamp) {
                         val period = System.currentTimeMillis() - droppedLastTimestamp.get()
                         if (period > DroppedReportInterval) {
-                            Log.i(TAG, "dropped ${droppedCounter.incrementAndGet()} in last $period ms")
+                            Log.i(
+                                TAG,
+                                "dropped ${droppedCounter.incrementAndGet()} in last $period ms"
+                            )
                             droppedLastTimestamp.set(System.currentTimeMillis())
                             droppedCounter.set(0)
                             return@onBackpressureDrop
@@ -118,7 +117,6 @@ class ListenerService : Service() {
                 droppedCounter.incrementAndGet()
             }
             .doOnTerminate { closeSocket() }
-            .map { TelemetryPacketDeserializer.map(ByteBuffer.wrap(it.data)) }
     }
 
     private fun closeSocket() {

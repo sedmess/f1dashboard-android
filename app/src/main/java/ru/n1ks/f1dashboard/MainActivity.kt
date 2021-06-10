@@ -18,6 +18,7 @@ import io.reactivex.rxkotlin.toSingle
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import ru.n1ks.f1dashboard.livedata.LiveData
 import ru.n1ks.f1dashboard.livedata.LiveDataFields
+import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
                 Log.d(TAG, "service $componentName connected")
                 (binder as ListenerService.Binder).flow()
+                    .map { TelemetryPacketDeserializer.map(it.data) }
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { packet -> liveData.onUpdate(packet) }
             }
