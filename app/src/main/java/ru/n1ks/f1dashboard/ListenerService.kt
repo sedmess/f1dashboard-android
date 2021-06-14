@@ -1,9 +1,7 @@
 package ru.n1ks.f1dashboard
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import io.reactivex.BackpressureStrategy
@@ -14,7 +12,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
 
-class ListenerService : Service() {
+class ListenerService : TelemetryProviderService() {
 
     companion object {
 
@@ -22,17 +20,6 @@ class ListenerService : Service() {
 
         private const val UDPBufferLength = 2048
         private const val DroppedReportInterval = 10000
-
-        fun bindService(context: Context, properties: Properties, connection: ServiceConnection) {
-            val intent = Intent(context, ListenerService::class.java)
-            intent.apply {
-                putExtra(Properties.Port, properties.port)
-            }
-            context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-
-        fun unbindService(context: Context, connection: ServiceConnection) =
-            context.unbindService(connection)
     }
 
     inner class Binder : android.os.Binder() {

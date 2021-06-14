@@ -1050,7 +1050,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             return@LiveDataField data
         },
         {
-            val sessionTimeField = findViewById(R.id.sessionTimeValue) as TextView
+            val sessionTimeField = findViewById<TextView>(R.id.sessionTimeValue)
             if (it > 0)
                 sessionTimeField.text = "${it / 60}:${secondsFormat.format(it % 60)}"
             else
@@ -1063,7 +1063,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         { data, _ -> data + 1 },
         {
             if (it % 100 == 0) {
-                val debugField = findViewById(R.id.debugFrameCount) as TextView
+                val debugField = findViewById<TextView>(R.id.debugFrameCount)
                 debugField.text = it.toString()
             }
         }

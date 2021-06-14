@@ -15,18 +15,17 @@ class LiveCaptureFrame(
     companion object {
 
         fun flow(inputStream: InputStream): Flowable<LiveCaptureFrame> =
-            Flowable.create<LiveCaptureFrame>(
-                    {
-                        var frame = readFrom(inputStream)
-                        while (frame != null) {
-                            it.onNext(frame)
-                            frame = readFrom(inputStream)
-                        }
-                        it.onComplete()
-                    },
-                    BackpressureStrategy.ERROR
-                )
-                .doOnTerminate { inputStream.close() }
+            Flowable.create(
+                {
+                    var frame = readFrom(inputStream)
+                    while (frame != null) {
+                        it.onNext(frame)
+                        frame = readFrom(inputStream)
+                    }
+                    it.onComplete()
+                },
+                BackpressureStrategy.BUFFER
+            )
 
         private fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
             val buffer = ByteBuffer.allocate(Long.SIZE_BYTES + Int.SIZE_BYTES).apply {
