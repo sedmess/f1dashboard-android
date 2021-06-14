@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.util.Supplier
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.toSingle
@@ -32,8 +33,14 @@ import java.io.FileInputStream
 import java.net.DatagramPacket
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.function.Predicate
 
 class MainActivity : AppCompatActivity() {
+
+    private interface StatedServiceConnection : ServiceConnection {
+
+        fun isConnected(): Boolean
+    }
 
     companion object {
         private const val TAG = "MainActivity"
@@ -42,14 +49,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var debugFrameCountTextView: TextView
     private lateinit var sessionTimeTextView: TextView
 
-    private lateinit var serviceConnection: ServiceConnection
-    private val properties: Lazy<Properties> =
-        lazy { getSharedPreferences(Properties.Name, Context.MODE_PRIVATE).loadProperties() }
+    private lateinit var serviceConnection: StatedServiceConnection
 
     private lateinit var liveData: LiveData
 
     @Volatile
     private var liveCaptureWorker: LiveCaptureWorker? = null
+
+    private var isReplaying = false
 
     @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,23 +75,30 @@ class MainActivity : AppCompatActivity() {
 
         liveData = LiveData(this, LiveDataFields)
 
-        serviceConnection = object : ServiceConnection {
+        serviceConnection = object : StatedServiceConnection {
+
+            private var connected: Boolean = false
+                get() = field
 
             private var flowDisposable: Disposable? = null
 
             override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
                 Log.d(TAG, "service $componentName connected")
-                flowDisposable = (binder as ListenerService.Binder).flow()
+                flowDisposable = (binder as TelemetryProviderService.Binder).flow()
                     .doOnNext { onPacket(it) }
-                    .map { TelemetryPacketDeserializer.map(it.data) }
+                    .map { TelemetryPacketDeserializer.map(it) }
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { packet -> liveData.onUpdate(packet) }
+                connected = true
             }
 
             override fun onServiceDisconnected(componentName: ComponentName?) {
                 flowDisposable?.dispose()
                 Log.d(TAG, "service $componentName disconnected")
+                connected = false
             }
+
+            override fun isConnected() = connected
         }
 
         showEndpoint()
@@ -93,11 +107,13 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        TelemetryProviderService.bindService(this, properties.value, ListenerService::class, serviceConnection)
+        TelemetryProviderService.bindService(this, ListenerService::class, serviceConnection)
     }
 
     override fun onStop() {
-        TelemetryProviderService.unbindService(this, serviceConnection) //todo check bound
+        if (serviceConnection.isConnected()) {
+            TelemetryProviderService.unbindService(this, serviceConnection)
+        }
 
         stopCapture()
 
@@ -110,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         @Suppress("DEPRECATION") val ipAddress =
             Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
         val dialog = AlertDialog.Builder(this)
-            .setMessage("Endpoint: $ipAddress:${properties.value.port}")
+            .setMessage("Endpoint: $ipAddress:${getSharedPreferences(Properties.Name, Context.MODE_PRIVATE).loadProperties().port}")
             .create()
         dialog.toSingle()
             .delay(5, TimeUnit.SECONDS)
@@ -118,8 +134,12 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun toggleReplay() { //todo
-        startReplay()
+    private fun toggleReplay() {
+        if (isReplaying) {
+            stopReplay()
+        } else {
+            startReplay()
+        }
     }
 
     private fun startReplay() {
@@ -129,29 +149,26 @@ class MainActivity : AppCompatActivity() {
                 return@also
             }
             stopCapture()
-            ListenerService.unbindService(this, serviceConnection)
+
+            TelemetryProviderService.unbindService(this, serviceConnection)
+
             sessionTimeTextView.background = ContextCompat.getDrawable(this, R.color.warn)
 
-            val inputStream = BufferedInputStream(FileInputStream(File(this.filesDir, fileName)))
-            Log.d(TAG, "open capture file")
-            Toast.makeText(this, "Replay...", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "start replaying")
-            var prevTS = 0L
-            LiveCaptureFrame.flow(inputStream)
-                .subscribeOn(Schedulers.newThread())
-                .doOnTerminate {
-                    Log.d(TAG, "close capture file")
-                    inputStream.close()
-                }
-                .doOnNext { SystemClock.sleep(it.timestamp - prevTS); prevTS = it.timestamp }
-                .map { TelemetryPacketDeserializer.map(it.data) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { packet -> liveData.onUpdate(packet) }
+            TelemetryProviderService.unbindService(this, serviceConnection)
+            TelemetryProviderService.bindService(
+                this,
+                ReplayService::class,
+                serviceConnection,
+                ReplayService.SourcePath to File(this.filesDir, fileName).absolutePath
+            )
+            isReplaying = true
         }
     }
 
     private fun stopReplay() {
-        //todo
+        TelemetryProviderService.unbindService(this, serviceConnection)
+        TelemetryProviderService.bindService(this, ListenerService::class, serviceConnection)
+        isReplaying = false
     }
 
     private fun toggleCapture() {
@@ -188,7 +205,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onPacket(packet: DatagramPacket) {
+    private fun onPacket(packet: ByteArray) {
         if (liveCaptureWorker != null) {
             synchronized(this) {
                 if (liveCaptureWorker != null) {

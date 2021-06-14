@@ -1,64 +1,40 @@
 package ru.n1ks.f1dashboard
 
 import android.app.*
+import android.content.Context
 import android.content.Intent
-import android.os.IBinder
 import android.util.Log
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
+import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import java.net.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 
-
 class ListenerService : TelemetryProviderService() {
 
     companion object {
-
-        private const val TAG = "ListenerService"
-
         private const val UDPBufferLength = 2048
         private const val DroppedReportInterval = 10000
     }
 
-    inner class Binder : android.os.Binder() {
-
-        fun flow() = this@ListenerService.messageFlow!!
-    }
-
-    private val binder = Binder()
     private var socket: DatagramSocket? = null
-    private var messageFlow: Flowable<DatagramPacket>? = null
+    private var messageFlow: Flowable<ByteArray>? = null
 
-    override fun onBind(intent: Intent): IBinder {
-        Log.d(TAG, "start")
-        val port = intent.getIntExtra(Properties.Port, -1)
-
+    override fun start(intent: Intent) {
+        val port = getSharedPreferences(Properties.Name, Context.MODE_PRIVATE).loadProperties().port
         initServer(port)
-
-        return binder
     }
 
-    override fun onUnbind(intent: Intent?): Boolean {
-        Log.d(TAG, "stopping")
-
+    override fun stop() {
         closeSocket()
 
         socket = null
         messageFlow = null
-
-        return false
     }
 
-    override fun onDestroy() {
-        Log.d(TAG, "destroy")
-        super.onDestroy()
-
-        closeSocket()
-        socket = null
-        messageFlow = null
-    }
+    override fun flow(): Flowable<ByteArray> = messageFlow ?: throw IllegalStateException("service not initialized")
 
     private fun initServer(port: Int) {
         socket = DatagramSocket(port)
@@ -104,6 +80,7 @@ class ListenerService : TelemetryProviderService() {
                 droppedCounter.incrementAndGet()
             }
             .doOnTerminate { closeSocket() }
+            .map { it.data }
     }
 
     private fun closeSocket() {
