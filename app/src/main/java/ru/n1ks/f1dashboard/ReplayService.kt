@@ -10,11 +10,13 @@ import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
 import java.io.BufferedInputStream
 import java.io.FileInputStream
 import java.io.IOException
+import java.util.zip.GZIPInputStream
 
 class ReplayService : TelemetryProviderService() {
 
     companion object {
         const val SourcePath = "source_path"
+        const val NoDalays = "no_delays"
     }
 
     private var messageFlow: Flowable<ByteArray>? = null
@@ -22,10 +24,12 @@ class ReplayService : TelemetryProviderService() {
     override fun start(intent: Intent) {
         val sourcePath = intent.getStringExtra(SourcePath)
             ?: throw IllegalArgumentException("$SourcePath extra not found")
-        val inputStream = BufferedInputStream(FileInputStream(sourcePath)) //todo use gzip
+        val replayDelays = intent.getStringExtra(NoDalays).isNullOrEmpty()
+        val inputStream = BufferedInputStream(GZIPInputStream(FileInputStream(sourcePath)))
         Log.d(TAG, "open capture file $sourcePath")
-        Log.d(TAG, "start replaying")
+        Log.d(TAG, "start replaying, replay delays = $replayDelays")
         var prevTS = 0L
+        var counter = 0L
         messageFlow = Flowable.create<LiveCaptureFrame>(
             {
                 try {
@@ -42,15 +46,18 @@ class ReplayService : TelemetryProviderService() {
             BackpressureStrategy.BUFFER)
             .subscribeOn(Schedulers.newThread())
             .doFinally {
-                Log.d(TAG, "close capture file $sourcePath")
+                Log.d(TAG, "close capture file $sourcePath, read $counter frames")
                 inputStream.close()
             }
             .doOnNext {
-                val targetTS = it.timestamp - prevTS + SystemClock.uptimeMillis()
-                while (SystemClock.uptimeMillis() < targetTS) {
-                    Thread.yield()
+                counter++
+                if (replayDelays) {
+                    val targetTS = it.timestamp - prevTS + SystemClock.uptimeMillis()
+                    while (SystemClock.uptimeMillis() < targetTS) {
+                        Thread.yield()
+                    }
+                    prevTS = it.timestamp
                 }
-                prevTS = it.timestamp
             }
             .map { it.data }
     }

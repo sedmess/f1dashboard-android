@@ -15,7 +15,7 @@ class LiveCaptureFrame(
         fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
             val buffer = ByteBuffer.allocate(Long.SIZE_BYTES + Int.SIZE_BYTES).apply {
                 order(ByteOrder.LITTLE_ENDIAN)
-                if (inputStream.read(array()) != capacity()) {
+                if (!readFromStream(inputStream)) {
                     return null
                 }
             }
@@ -23,11 +23,25 @@ class LiveCaptureFrame(
             val dataSize = buffer.int
             val data = ByteBuffer.allocate(dataSize).apply {
                 order(ByteOrder.LITTLE_ENDIAN)
-                if (inputStream.read(array()) != capacity()) {
+                if (!readFromStream(inputStream))
                     return null
-                }
             }.array()
             return LiveCaptureFrame(timestamp, data)
+        }
+
+        private fun ByteBuffer.readFromStream(inputStream: InputStream): Boolean {
+            var pos = 0
+            var remain = capacity()
+            var read = 0
+            do {
+                pos += read
+                remain -= read
+                read = inputStream.read(array(), pos, remain)
+                if (read == -1) {
+                    return false
+                }
+            } while (read != remain)
+            return true
         }
     }
 
