@@ -79,7 +79,7 @@ class ListenerService : TelemetryProviderService() {
                 }
                 droppedCounter.incrementAndGet()
             }
-            .doOnTerminate { closeSocket() }
+            .doFinally { closeSocket() }
             .map { it.data }
     }
 

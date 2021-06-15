@@ -1,7 +1,5 @@
 package ru.n1ks.f1dashboard.capture
 
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -14,20 +12,7 @@ class LiveCaptureFrame(
 
     companion object {
 
-        fun flow(inputStream: InputStream): Flowable<LiveCaptureFrame> =
-            Flowable.create(
-                {
-                    var frame = readFrom(inputStream)
-                    while (frame != null) {
-                        it.onNext(frame)
-                        frame = readFrom(inputStream)
-                    }
-                    it.onComplete()
-                },
-                BackpressureStrategy.BUFFER
-            )
-
-        private fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
+        fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
             val buffer = ByteBuffer.allocate(Long.SIZE_BYTES + Int.SIZE_BYTES).apply {
                 order(ByteOrder.LITTLE_ENDIAN)
                 if (inputStream.read(array()) != capacity()) {

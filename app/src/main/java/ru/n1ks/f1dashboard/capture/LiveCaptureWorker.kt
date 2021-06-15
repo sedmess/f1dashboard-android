@@ -7,8 +7,10 @@ import io.reactivex.Emitter
 import io.reactivex.Flowable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.io.*
-import java.util.zip.GZIPOutputStream
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 class LiveCaptureWorker(
     val file: File
@@ -18,6 +20,8 @@ class LiveCaptureWorker(
         private const val TAG = "LiveCaptureWorker"
     }
 
+    var frameCount: Long = 0
+        private set
     private val outputStream: OutputStream
     private val startTimestamp = SystemClock.uptimeMillis()
     private lateinit var flowEmitter: Emitter<ByteArray>
@@ -27,12 +31,12 @@ class LiveCaptureWorker(
     private val flowDisposable: Disposable
 
     init {
-        outputStream = GZIPOutputStream(FileOutputStream(file))
+        outputStream = BufferedOutputStream(FileOutputStream(file))
         Log.d(TAG, "open file " + file.path)
         flowDisposable = flow
             .map {LiveCaptureFrame(SystemClock.uptimeMillis() - startTimestamp, it) }
             .observeOn(Schedulers.newThread())
-            .doOnTerminate {
+            .doFinally {
                 Log.d(TAG, "close file " + file.path)
                 outputStream.close()
             }
@@ -40,11 +44,11 @@ class LiveCaptureWorker(
     }
 
     fun onPacket(packet: ByteArray) {
+        frameCount++
         flowEmitter.onNext(packet)
     }
 
     override fun close() {
-        flowEmitter.onComplete()
         flowDisposable.dispose()
     }
 }

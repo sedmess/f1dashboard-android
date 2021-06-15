@@ -3,11 +3,9 @@ package ru.n1ks.f1dashboard
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
-import android.content.ServiceConnection
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.IBinder
-import android.os.SystemClock
 import android.text.format.Formatter
 import android.util.Log
 import android.view.WindowManager
@@ -16,31 +14,19 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.util.Supplier
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.toSingle
-import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
-import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
 import ru.n1ks.f1dashboard.capture.LiveCaptureWorker
 import ru.n1ks.f1dashboard.livedata.LiveData
 import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.FileInputStream
-import java.net.DatagramPacket
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Predicate
 
 class MainActivity : AppCompatActivity() {
-
-    private interface StatedServiceConnection : ServiceConnection {
-
-        fun isConnected(): Boolean
-    }
 
     companion object {
         private const val TAG = "MainActivity"
@@ -49,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var debugFrameCountTextView: TextView
     private lateinit var sessionTimeTextView: TextView
 
-    private lateinit var serviceConnection: StatedServiceConnection
+    private lateinit var serviceConnection: TelemetryProviderService.Connection
 
     private lateinit var liveData: LiveData
 
@@ -75,10 +61,9 @@ class MainActivity : AppCompatActivity() {
 
         liveData = LiveData(this, LiveDataFields)
 
-        serviceConnection = object : StatedServiceConnection {
+        serviceConnection = object : TelemetryProviderService.Connection {
 
             private var connected: Boolean = false
-                get() = field
 
             private var flowDisposable: Disposable? = null
 
@@ -93,6 +78,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onServiceDisconnected(componentName: ComponentName?) {
+                onUnbind()
+            }
+
+            override fun onUnbind() {
                 flowDisposable?.dispose()
                 Log.d(TAG, "service $componentName disconnected")
                 connected = false
@@ -154,7 +143,6 @@ class MainActivity : AppCompatActivity() {
 
             sessionTimeTextView.background = ContextCompat.getDrawable(this, R.color.warn)
 
-            TelemetryProviderService.unbindService(this, serviceConnection)
             TelemetryProviderService.bindService(
                 this,
                 ReplayService::class,
@@ -166,6 +154,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopReplay() {
+        sessionTimeTextView.background = null
         TelemetryProviderService.unbindService(this, serviceConnection)
         TelemetryProviderService.bindService(this, ListenerService::class, serviceConnection)
         isReplaying = false
@@ -199,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "stop capturing")
                 close()
                 debugFrameCountTextView.background = null
-                Toast.makeText(this@MainActivity, "Capture saved to: " + file.path, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Captured ${this.frameCount} frames. Saved to: " + file.path, Toast.LENGTH_SHORT).show()
             }
             liveCaptureWorker = null
         }

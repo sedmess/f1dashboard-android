@@ -13,7 +13,7 @@ abstract class TelemetryProviderService : Service() {
 
     companion object {
 
-        fun bindService(context: Context, serviceClass: KClass<out TelemetryProviderService>, connection: ServiceConnection, vararg args: Pair<String, String> = emptyArray()) {
+        fun bindService(context: Context, serviceClass: KClass<out TelemetryProviderService>, connection: Connection, vararg args: Pair<String, String> = emptyArray()) {
             val intent = Intent(context, serviceClass.java)
             if (!args.isNullOrEmpty()) {
                 args.forEach { intent.putExtra(it.first, it.second) }
@@ -21,8 +21,17 @@ abstract class TelemetryProviderService : Service() {
             context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
-        fun unbindService(context: Context, connection: ServiceConnection) =
+        fun unbindService(context: Context, connection: Connection) {
             context.unbindService(connection)
+            connection.onUnbind()
+        }
+    }
+
+    interface Connection : ServiceConnection {
+
+        fun isConnected(): Boolean
+
+        fun onUnbind()
     }
 
     inner class Binder : android.os.Binder() {

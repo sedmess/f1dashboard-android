@@ -20,6 +20,10 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service android:name=".ReplayService"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:screenOrientation="sensorLandscape">
