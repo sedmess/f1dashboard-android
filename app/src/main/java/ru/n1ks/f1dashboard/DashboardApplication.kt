@@ -15,6 +15,7 @@ class DashboardApplication : Application() {
         initAcra {
             //core configuration:
             buildConfigClass = BuildConfig::class.java
+            this.
             reportFormat = StringFormat.JSON
 
             dialog {

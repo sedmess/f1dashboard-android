@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.text.format.Formatter
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
@@ -49,6 +50,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        findViewById<View>(R.id.drsCaption).setOnClickListener {
+            throw RuntimeException("ops!")
+        }
 
         debugFrameCountTextView = findViewById(R.id.debugFrameCount)
         debugFrameCountTextView.apply {

@@ -8,6 +8,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
+import ru.n1ks.f1dashboard.reporting.UDPPacketTail
 import java.net.*
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -81,6 +82,7 @@ class ListenerService : TelemetryProviderService() {
             }
             .doFinally { closeSocket() }
             .map { it.data }
+            .doOnNext { UDPPacketTail.onPacket(it) }
     }
 
     private fun closeSocket() {

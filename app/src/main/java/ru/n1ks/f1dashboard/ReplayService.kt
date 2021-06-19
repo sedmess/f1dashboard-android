@@ -7,6 +7,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
+import ru.n1ks.f1dashboard.reporting.UDPPacketTail
 import java.io.BufferedInputStream
 import java.io.FileInputStream
 import java.io.IOException
@@ -16,7 +17,7 @@ class ReplayService : TelemetryProviderService() {
 
     companion object {
         const val SourcePath = "source_path"
-        const val NoDalays = "no_delays"
+        const val NoDelays = "no_delays"
     }
 
     private var messageFlow: Flowable<ByteArray>? = null
@@ -24,7 +25,7 @@ class ReplayService : TelemetryProviderService() {
     override fun start(intent: Intent) {
         val sourcePath = intent.getStringExtra(SourcePath)
             ?: throw IllegalArgumentException("$SourcePath extra not found")
-        val replayDelays = intent.getStringExtra(NoDalays).isNullOrEmpty()
+        val replayDelays = intent.getStringExtra(NoDelays).isNullOrEmpty()
         val inputStream = BufferedInputStream(GZIPInputStream(FileInputStream(sourcePath)))
         Log.d(TAG, "open capture file $sourcePath")
         Log.d(TAG, "start replaying, replay delays = $replayDelays")
@@ -34,7 +35,7 @@ class ReplayService : TelemetryProviderService() {
             {
                 try {
                     var frame = LiveCaptureFrame.readFrom(inputStream)
-                    while (frame != null) {
+                    while (frame != null && !it.isCancelled) {
                         it.onNext(frame)
                         frame = LiveCaptureFrame.readFrom(inputStream)
                     }
@@ -60,6 +61,7 @@ class ReplayService : TelemetryProviderService() {
                 }
             }
             .map { it.data }
+            .doOnNext { UDPPacketTail.onPacket(it) }
     }
 
     override fun stop() {}
