@@ -32,11 +32,13 @@ abstract class TelemetryProviderService : Service() {
         fun isConnected(): Boolean
 
         fun onUnbind()
+
+        fun service(): TelemetryProviderService?
     }
 
     inner class Binder : android.os.Binder() {
 
-        fun flow() = this@TelemetryProviderService.flow()
+        fun service(): TelemetryProviderService = this@TelemetryProviderService
     }
 
     @Suppress("PropertyName")
@@ -62,7 +64,7 @@ abstract class TelemetryProviderService : Service() {
         super.onDestroy()
     }
 
-    protected abstract fun flow(): Flowable<ByteArray>
+    abstract fun flow(): Flowable<ByteArray>
 
     protected abstract fun start(intent: Intent)
 

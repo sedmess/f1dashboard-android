@@ -19,7 +19,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.toSingle
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
-import ru.n1ks.f1dashboard.capture.LiveCaptureWorker
+import ru.n1ks.f1dashboard.capture.Recorder
 import ru.n1ks.f1dashboard.livedata.LiveData
 import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
@@ -40,12 +40,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var liveData: LiveData
 
-    @Volatile
-    private var liveCaptureWorker: LiveCaptureWorker? = null
-
+    private var isRecording = false
     private var isReplaying = false
 
-    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -69,13 +66,13 @@ class MainActivity : AppCompatActivity() {
         serviceConnection = object : TelemetryProviderService.Connection {
 
             private var connected: Boolean = false
-
+            private var service: TelemetryProviderService? = null
             private var flowDisposable: Disposable? = null
 
             override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
                 Log.d(TAG, "service $componentName connected")
-                flowDisposable = (binder as TelemetryProviderService.Binder).flow()
-                    .doOnNext { onPacket(it) }
+                service = (binder as TelemetryProviderService.Binder).service()
+                flowDisposable = service!!.flow()
                     .map { TelemetryPacketDeserializer.map(it) }
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { packet -> liveData.onUpdate(packet) }
@@ -89,10 +86,13 @@ class MainActivity : AppCompatActivity() {
             override fun onUnbind() {
                 flowDisposable?.dispose()
                 Log.d(TAG, "service $componentName disconnected")
+                service = null
                 connected = false
             }
 
             override fun isConnected() = connected
+
+            override fun service(): TelemetryProviderService? = service
         }
 
         showEndpoint()
@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startReplay() {
+        stopCapture()
         fileList().find { it == "latest.cap" }.also { fileName ->
             if (fileName == null) {
                 Toast.makeText(this, "No captures found", Toast.LENGTH_SHORT).show()
@@ -166,46 +167,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toggleCapture() {
-        synchronized(this) {
-            if (liveCaptureWorker != null) {
-                stopCapture()
-            } else {
-                startCapture()
-            }
+        if (isRecording) {
+            stopCapture()
+        } else {
+            startCapture()
         }
     }
 
     private fun startCapture() {
-        synchronized(this) {
-            if (liveCaptureWorker != null) {
-                stopCapture()
-            }
-            val captureFile = File(this.filesDir, "latest.cap") //todo filename
-            liveCaptureWorker = LiveCaptureWorker(captureFile)
-            Log.d(TAG, "start capturing to file: " + captureFile.absolutePath)
+        val service = serviceConnection.service()
+        if (service is Recorder) {
+            service.startRecording()
             debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.warn)
+            isRecording = true
+        } else {
+            Toast.makeText(this, "Can't start recording", Toast.LENGTH_SHORT).show()
         }
+
     }
 
     private fun stopCapture() {
-        synchronized(this) {
-            liveCaptureWorker?.apply {
-                Log.d(TAG, "stop capturing")
-                close()
-                debugFrameCountTextView.background = null
-                Toast.makeText(this@MainActivity, "Captured ${this.frameCount} frames. Saved to: " + file.path, Toast.LENGTH_SHORT).show()
-            }
-            liveCaptureWorker = null
+        val service = serviceConnection.service()
+        if (service is Recorder) {
+            val frameCount = service.stopRecording()
+            Toast.makeText(this@MainActivity, "Captured $frameCount frames", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Capture wasn't enabled", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun onPacket(packet: ByteArray) {
-        if (liveCaptureWorker != null) {
-            synchronized(this) {
-                if (liveCaptureWorker != null) {
-                    liveCaptureWorker!!.onPacket(packet)
-                }
-            }
-        }
+        debugFrameCountTextView.background = null
+        isRecording = false
     }
 }
