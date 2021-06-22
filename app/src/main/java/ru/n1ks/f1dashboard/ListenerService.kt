@@ -10,7 +10,7 @@ import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import ru.n1ks.f1dashboard.capture.LiveCaptureWorker
 import ru.n1ks.f1dashboard.capture.Recorder
-import ru.n1ks.f1dashboard.reporting.UDPPacketTail
+import ru.n1ks.f1dashboard.reporting.PacketTail
 import java.io.File
 import java.net.*
 import java.util.*
@@ -77,7 +77,7 @@ class ListenerService : TelemetryProviderService(), Recorder {
         socket = DatagramSocket(port)
         val droppedLastTimestamp = AtomicLong()
         val droppedCounter = AtomicLong()
-        messageFlow = Flowable.create<DatagramPacket>(
+        messageFlow = Flowable.create<ByteArray>(
             {
                 droppedLastTimestamp.set(System.currentTimeMillis())
                 while (!it.isCancelled) {
@@ -92,7 +92,8 @@ class ListenerService : TelemetryProviderService(), Recorder {
                         it.onError(e)
                         break
                     }
-                    it.onNext(packet)
+                    packet.data
+                    it.onNext(packet.data.copyOf(packet.length))
                 }
                 it.onComplete()
             },
@@ -117,9 +118,8 @@ class ListenerService : TelemetryProviderService(), Recorder {
                 droppedCounter.incrementAndGet()
             }
             .doFinally { closeSocket() }
-            .map { it.data }
             .doOnNext {
-                UDPPacketTail.onPacket(it)
+                PacketTail.onPacket(it)
                 if (liveCaptureWorker != null) {
                     synchronized(this) {
                         if (liveCaptureWorker != null) {

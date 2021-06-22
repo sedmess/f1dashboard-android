@@ -137,13 +137,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startReplay() {
-        stopCapture()
+        if (isRecording) {
+            stopCapture()
+        }
         fileList().find { it == "latest.cap" }.also { fileName ->
             if (fileName == null) {
                 Toast.makeText(this, "No captures found", Toast.LENGTH_SHORT).show()
                 return@also
             }
-            stopCapture()
 
             TelemetryProviderService.unbindService(this, serviceConnection)
 

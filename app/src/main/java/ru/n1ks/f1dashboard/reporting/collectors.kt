@@ -1,8 +1,12 @@
 package ru.n1ks.f1dashboard.reporting
 
-object UDPPacketTail {
+internal object ReportingKeys {
+    const val LastPacketsData = "last_packets"
+}
 
-    private const val tailSize = 20
+object PacketTail {
+
+    private const val tailSize = 10
     private val tail = Array<ByteArray?>(tailSize) { null }
     private var tailIdx = 0
 
@@ -30,3 +34,4 @@ object UDPPacketTail {
         }
     }
 }
+

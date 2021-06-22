@@ -12,7 +12,7 @@ import java.io.FileOutputStream
 import java.util.zip.GZIPOutputStream
 
 class LiveCaptureWorker(
-    val file: File
+    private val file: File
 ) : AutoCloseable {
 
     companion object {

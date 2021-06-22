@@ -39,7 +39,7 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleInstance"
-            android:process=":acra" />
+            android:process=":reporting" />
 
     </application>
 

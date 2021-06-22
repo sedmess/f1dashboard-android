@@ -7,7 +7,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
-import ru.n1ks.f1dashboard.reporting.UDPPacketTail
+import ru.n1ks.f1dashboard.reporting.PacketTail
 import java.io.BufferedInputStream
 import java.io.FileInputStream
 import java.io.IOException
@@ -61,7 +61,7 @@ class ReplayService : TelemetryProviderService() {
                 }
             }
             .map { it.data }
-            .doOnNext { UDPPacketTail.onPacket(it) }
+            .doOnNext { PacketTail.onPacket(it) }
     }
 
     override fun stop() {}
