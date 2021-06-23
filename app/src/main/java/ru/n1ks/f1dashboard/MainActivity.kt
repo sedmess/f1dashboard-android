@@ -3,6 +3,7 @@ package ru.n1ks.f1dashboard
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.IBinder
@@ -12,6 +13,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -40,6 +42,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var liveData: LiveData
 
+    private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) replayFromFile(it) }
+
+    //todo use current mode
     private var isRecording = false
     private var isReplaying = false
 
@@ -48,9 +53,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        findViewById<View>(R.id.drsCaption).setOnClickListener {
-            throw RuntimeException("ops!")
+        findViewById<View>(R.id.drsCaption).apply {
+            setOnClickListener {
+//                val intent = Intent().apply {
+//                    type = "application/json"
+//                    action = Intent.ACTION_GET_CONTENT
+//                }
+                openReportFile.launch("application/json")
+            }
+            setOnLongClickListener {
+                throw RuntimeException("ops!")
+                true
+            }
         }
+
 
         debugFrameCountTextView = findViewById(R.id.debugFrameCount)
         debugFrameCountTextView.apply {
@@ -120,7 +136,14 @@ class MainActivity : AppCompatActivity() {
         @Suppress("DEPRECATION") val ipAddress =
             Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
         val dialog = AlertDialog.Builder(this)
-            .setMessage("Endpoint: $ipAddress:${getSharedPreferences(Properties.Name, Context.MODE_PRIVATE).loadProperties().port}")
+            .setMessage(
+                "Endpoint: $ipAddress:${
+                    getSharedPreferences(
+                        Properties.Name,
+                        Context.MODE_PRIVATE
+                    ).loadProperties().port
+                }"
+            )
             .create()
         dialog.toSingle()
             .delay(5, TimeUnit.SECONDS)
@@ -154,10 +177,34 @@ class MainActivity : AppCompatActivity() {
                 this,
                 ReplayService::class,
                 serviceConnection,
+                ReplayService.SourceType to ReplayService.SourceTypeCapture,
                 ReplayService.SourcePath to File(this.filesDir, fileName).absolutePath
             )
             isReplaying = true
         }
+    }
+
+    private fun replayFromFile(uri: Uri) {
+        //todo deduplicate code
+        if (isRecording) {
+            stopCapture()
+        }
+        if (isReplaying) {
+            startReplay()
+        }
+
+        TelemetryProviderService.unbindService(this, serviceConnection)
+
+        sessionTimeTextView.background = ContextCompat.getDrawable(this, R.color.warn)
+
+        TelemetryProviderService.bindService(
+            this,
+            ReplayService::class,
+            serviceConnection,
+            ReplayService.SourceType to ReplayService.SourceTypeReport,
+            ReplayService.SourcePath to uri.toString()
+        )
+        isReplaying = true
     }
 
     private fun stopReplay() {
@@ -191,7 +238,8 @@ class MainActivity : AppCompatActivity() {
         val service = serviceConnection.service()
         if (service is Recorder) {
             val frameCount = service.stopRecording()
-            Toast.makeText(this@MainActivity, "Captured $frameCount frames", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity, "Captured $frameCount frames", Toast.LENGTH_SHORT)
+                .show()
         } else {
             Toast.makeText(this, "Capture wasn't enabled", Toast.LENGTH_SHORT).show()
         }
