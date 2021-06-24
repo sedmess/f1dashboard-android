@@ -48,10 +48,6 @@ class MainActivity : AppCompatActivity() {
     private var state = State.None
 
     private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) replayFromCrashReport(it) }
-//
-//    //todo use current mode
-//    private var isRecording = false
-//    private var isReplaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
