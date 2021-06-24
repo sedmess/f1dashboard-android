@@ -35,18 +35,23 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
     }
 
+    private enum class State {
+        None, ListenOnly, ListenRecording, ReplayCapture, ReplayCrashReport
+    }
+
     private lateinit var debugFrameCountTextView: TextView
-    private lateinit var sessionTimeTextView: TextView
 
     private lateinit var serviceConnection: TelemetryProviderService.Connection
 
     private lateinit var liveData: LiveData
 
-    private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) replayFromFile(it) }
+    private var state = State.None
 
-    //todo use current mode
-    private var isRecording = false
-    private var isReplaying = false
+    private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) replayFromCrashReport(it) }
+//
+//    //todo use current mode
+//    private var isRecording = false
+//    private var isReplaying = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,27 +60,19 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.drsCaption).apply {
             setOnClickListener {
-//                val intent = Intent().apply {
-//                    type = "application/json"
-//                    action = Intent.ACTION_GET_CONTENT
-//                }
                 openReportFile.launch("application/json")
             }
             setOnLongClickListener {
                 throw RuntimeException("ops!")
-                true
             }
         }
 
+        findViewById<TextView>(R.id.sessionTimeValue).setOnClickListener { showEndpoint() }
 
-        debugFrameCountTextView = findViewById(R.id.debugFrameCount)
-        debugFrameCountTextView.apply {
-            setOnClickListener { showEndpoint() }
+        debugFrameCountTextView = findViewById<TextView>(R.id.debugFrameCount).apply {
+            setOnClickListener { toggleReplay() }
             setOnLongClickListener { toggleCapture(); true }
         }
-
-        sessionTimeTextView = findViewById(R.id.sessionTimeValue)
-        sessionTimeTextView.setOnLongClickListener { toggleReplay(); true }
 
         liveData = LiveData(this, LiveDataFields)
 
@@ -118,14 +115,22 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         TelemetryProviderService.bindService(this, ListenerService::class, serviceConnection)
+        state = State.ListenOnly
     }
 
     override fun onStop() {
+        when (state) {
+            State.ListenRecording -> stopCapture()
+            State.ReplayCapture -> stopReplay()
+            State.ReplayCrashReport -> stopReplay()
+            else -> {}
+        }
+
         if (serviceConnection.isConnected()) {
             TelemetryProviderService.unbindService(this, serviceConnection)
         }
 
-        stopCapture()
+        state = State.None
 
         super.onStop()
     }
@@ -152,17 +157,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toggleReplay() {
-        if (isReplaying) {
-            stopReplay()
-        } else {
-            startReplay()
+        when (state) {
+            State.ListenOnly -> replaySelectDialog()
+            State.ListenRecording -> {
+                stopCapture()
+                replaySelectDialog()
+            }
+            State.ReplayCapture -> stopReplay()
+            State.ReplayCrashReport -> stopReplay()
+            State.None -> {}
         }
     }
 
-    private fun startReplay() {
-        if (isRecording) {
-            stopCapture()
-        }
+    private fun replaySelectDialog() {
+        //todo captions
+        AlertDialog.Builder(this)
+            .setTitle("Replay")
+            .setMessage("Replay last capture?")
+            .setPositiveButton("Yes") { _, _ -> replayFromCapture() }
+            .setNegativeButton("No") { _, _ -> openReportFile.launch("application/json") }
+            .create()
+            .apply { setCanceledOnTouchOutside(false); show() }
+    }
+
+    private fun replayFromCapture() {
         fileList().find { it == "latest.cap" }.also { fileName ->
             if (fileName == null) {
                 Toast.makeText(this, "No captures found", Toast.LENGTH_SHORT).show()
@@ -171,7 +189,7 @@ class MainActivity : AppCompatActivity() {
 
             TelemetryProviderService.unbindService(this, serviceConnection)
 
-            sessionTimeTextView.background = ContextCompat.getDrawable(this, R.color.warn)
+            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.replaying)
 
             TelemetryProviderService.bindService(
                 this,
@@ -180,22 +198,14 @@ class MainActivity : AppCompatActivity() {
                 ReplayService.SourceType to ReplayService.SourceTypeCapture,
                 ReplayService.SourcePath to File(this.filesDir, fileName).absolutePath
             )
-            isReplaying = true
+            state = State.ReplayCapture
         }
     }
 
-    private fun replayFromFile(uri: Uri) {
-        //todo deduplicate code
-        if (isRecording) {
-            stopCapture()
-        }
-        if (isReplaying) {
-            startReplay()
-        }
-
+    private fun replayFromCrashReport(uri: Uri) {
         TelemetryProviderService.unbindService(this, serviceConnection)
 
-        sessionTimeTextView.background = ContextCompat.getDrawable(this, R.color.warn)
+        debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.replaying)
 
         TelemetryProviderService.bindService(
             this,
@@ -204,21 +214,23 @@ class MainActivity : AppCompatActivity() {
             ReplayService.SourceType to ReplayService.SourceTypeReport,
             ReplayService.SourcePath to uri.toString()
         )
-        isReplaying = true
+        state = State.ReplayCrashReport
     }
 
     private fun stopReplay() {
-        sessionTimeTextView.background = null
+        debugFrameCountTextView.background = null
         TelemetryProviderService.unbindService(this, serviceConnection)
         TelemetryProviderService.bindService(this, ListenerService::class, serviceConnection)
-        isReplaying = false
+        state = State.ListenOnly
     }
 
     private fun toggleCapture() {
-        if (isRecording) {
-            stopCapture()
-        } else {
-            startCapture()
+        when (state) {
+            State.ListenOnly -> startCapture()
+            State.ListenRecording -> stopCapture()
+            State.ReplayCapture -> {}
+            State.ReplayCrashReport -> {}
+            State.None -> {}
         }
     }
 
@@ -226,8 +238,8 @@ class MainActivity : AppCompatActivity() {
         val service = serviceConnection.service()
         if (service is Recorder) {
             service.startRecording()
-            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.warn)
-            isRecording = true
+            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.recoring)
+            state = State.ListenRecording
         } else {
             Toast.makeText(this, "Can't start recording", Toast.LENGTH_SHORT).show()
         }
@@ -244,6 +256,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Capture wasn't enabled", Toast.LENGTH_SHORT).show()
         }
         debugFrameCountTextView.background = null
-        isRecording = false
+        state = State.ListenOnly
     }
 }

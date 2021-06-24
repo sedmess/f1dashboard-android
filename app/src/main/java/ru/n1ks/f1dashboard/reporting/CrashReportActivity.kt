@@ -28,7 +28,7 @@ class CrashReportActivity : AppCompatActivity() {
             .setPositiveButton(R.string.crashReportSendCaption) { _, _ ->
                 val errorDetails =
                     CustomActivityOnCrash.getAllErrorDetailsFromIntent(this, intent) +
-                            (crashDataStoreHelper.load()[ReportingKeys.LastPacketsData] ?: "")
+                            (crashDataStoreHelper.load()[ReportingKeys.LastPacketsData]?.let { "\nLast packets:\n$it" } ?: "")
                 startActivity(
                     Intent.createChooser(
                         Intent().apply {
@@ -46,9 +46,6 @@ class CrashReportActivity : AppCompatActivity() {
                 crashDataStoreHelper.delete()
                 finish()
             }
-            .create().apply {
-                setCanceledOnTouchOutside(false)
-                show()
-            }
+            .create().apply { setCanceledOnTouchOutside(false); show() }
     }
 }
