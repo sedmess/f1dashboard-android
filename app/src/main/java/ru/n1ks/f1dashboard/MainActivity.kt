@@ -52,9 +52,9 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.CreateDocument()) {
             if (it == null) {
                 AlertDialog.Builder(this)
-                    .setMessage("Do you really want not to save the last capture?") //todo resources
-                    .setNegativeButton("Yes, delete it") { _, _ -> moveCaptureFile(null) }
-                    .setPositiveButton("No, save it") { _, _ -> captureSaveDialog() }
+                    .setMessage(getString(R.string.dialog_capture_save_cancel_confirm))
+                    .setNegativeButton(getString(R.string.dialog_capture_save_cancel_yes)) { _, _ -> moveCaptureFile(null) }
+                    .setPositiveButton(getString(R.string.dialog_capture_save_cancel_no)) { _, _ -> captureSaveDialog() }
                     .setCancelable(false)
                     .create().show()
             } else {
@@ -73,15 +73,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        findViewById<View>(R.id.drsCaption).apply {
-            setOnClickListener {
-                openReportFile.launch("application/json")
-            }
-            setOnLongClickListener {
-                throw RuntimeException("ops!")
-            }
-        }
-
+        findViewById<View>(R.id.drsCaption).setOnLongClickListener { recreate(); true }
         findViewById<TextView>(R.id.sessionTimeValue).setOnClickListener { showEndpoint() }
 
         debugFrameCountTextView = findViewById<TextView>(R.id.debugFrameCount).apply {
@@ -187,12 +179,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun replaySelectDialog() {
-        //todo captions
         AlertDialog.Builder(this)
-            .setTitle("Replay")
-            .setMessage("Source of replay")
-            .setPositiveButton("Capture file") { _, _ -> openCaptureFile.launch("*/*") }
-            .setNegativeButton("Crash report JSON file") { _, _ -> openReportFile.launch("application/json") }
+            .setTitle(getString(R.string.dialog_replay_title))
+            .setMessage(getString(R.string.dialog_replay_message))
+            .setPositiveButton(getString(R.string.dialog_replay_capture_file)) { _, _ -> openCaptureFile.launch("*/*") }
+            .setNegativeButton(getString(R.string.dialog_replay_report_file)) { _, _ -> openReportFile.launch("application/json") }
             .create()
             .apply { setCanceledOnTouchOutside(false); show() }
     }
