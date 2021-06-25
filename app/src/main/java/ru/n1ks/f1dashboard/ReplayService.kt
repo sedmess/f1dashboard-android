@@ -12,8 +12,6 @@ import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
 import ru.n1ks.f1dashboard.reporting.ByteArraysJSONUtils
 import ru.n1ks.f1dashboard.reporting.PacketTail
 import java.io.BufferedInputStream
-import java.io.FileInputStream
-import java.io.IOException
 import java.util.zip.GZIPInputStream
 
 class ReplayService : TelemetryProviderService() {
@@ -53,7 +51,8 @@ class ReplayService : TelemetryProviderService() {
         messageFlow ?: throw IllegalStateException("service not initialized")
 
     private fun startFromCapture(sourcePath: String, replayDelays: Boolean) {
-        val inputStream = BufferedInputStream(GZIPInputStream(FileInputStream(sourcePath)))
+        val captureUri = Uri.parse(sourcePath)
+        val inputStream = contentResolver.openInputStream(captureUri)?.let { GZIPInputStream(BufferedInputStream(it)) } ?: throw IllegalArgumentException("can't open uri $captureUri")
         Log.d(TAG, "open capture file $sourcePath")
         Log.d(TAG, "start replaying, replay delays = $replayDelays")
         var prevTS = 0L
@@ -66,7 +65,7 @@ class ReplayService : TelemetryProviderService() {
                         it.onNext(frame)
                         frame = LiveCaptureFrame.readFrom(inputStream)
                     }
-                } catch (e: IOException) {
+                } catch (e: Exception) {
                     Log.d(TAG, "can't read from stream: ${e.message}")
                 }
                 it.onComplete()

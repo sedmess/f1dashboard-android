@@ -52,7 +52,7 @@ class ListenerService : TelemetryProviderService(), Recorder {
             if (liveCaptureWorker != null) {
                 startRecording()
             }
-            val captureFile = File(this.filesDir, "latest.cap") //todo filename
+            val captureFile = File(this.filesDir, Recorder.LastestCaptureFilename)
             liveCaptureWorker = LiveCaptureWorker(captureFile)
             Log.d(TAG, "start capturing to file: " + captureFile.absolutePath)
         }

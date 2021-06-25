@@ -26,6 +26,7 @@ import ru.n1ks.f1dashboard.livedata.LiveData
 import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
 import java.io.File
+import java.io.FileInputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -47,7 +48,25 @@ class MainActivity : AppCompatActivity() {
 
     private var state = State.None
 
-    private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) replayFromCrashReport(it) }
+    private val saveCaptureFile =
+        registerForActivityResult(ActivityResultContracts.CreateDocument()) {
+            if (it == null) {
+                AlertDialog.Builder(this)
+                    .setMessage("Do you really want not to save the last capture?") //todo resources
+                    .setNegativeButton("Yes, delete it") { _, _ -> moveCaptureFile(null) }
+                    .setPositiveButton("No, save it") { _, _ -> captureSaveDialog() }
+                    .setCancelable(false)
+                    .create().show()
+            } else {
+                moveCaptureFile(it)
+            }
+        }
+    private val openCaptureFile = registerForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) replayFromCapture(it)
+    }
+    private val openReportFile = registerForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) replayFromCrashReport(it)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,7 +138,8 @@ class MainActivity : AppCompatActivity() {
             State.ListenRecording -> stopCapture()
             State.ReplayCapture -> stopReplay()
             State.ReplayCrashReport -> stopReplay()
-            else -> {}
+            else -> {
+            }
         }
 
         if (serviceConnection.isConnected()) {
@@ -161,7 +181,8 @@ class MainActivity : AppCompatActivity() {
             }
             State.ReplayCapture -> stopReplay()
             State.ReplayCrashReport -> stopReplay()
-            State.None -> {}
+            State.None -> {
+            }
         }
     }
 
@@ -169,33 +190,26 @@ class MainActivity : AppCompatActivity() {
         //todo captions
         AlertDialog.Builder(this)
             .setTitle("Replay")
-            .setMessage("Replay last capture?")
-            .setPositiveButton("Yes") { _, _ -> replayFromCapture() }
-            .setNegativeButton("No") { _, _ -> openReportFile.launch("application/json") }
+            .setMessage("Source of replay")
+            .setPositiveButton("Capture file") { _, _ -> openCaptureFile.launch("*/*") }
+            .setNegativeButton("Crash report JSON file") { _, _ -> openReportFile.launch("application/json") }
             .create()
             .apply { setCanceledOnTouchOutside(false); show() }
     }
 
-    private fun replayFromCapture() {
-        fileList().find { it == "latest.cap" }.also { fileName ->
-            if (fileName == null) {
-                Toast.makeText(this, "No captures found", Toast.LENGTH_SHORT).show()
-                return@also
-            }
+    private fun replayFromCapture(uri: Uri) {
+        TelemetryProviderService.unbindService(this, serviceConnection)
 
-            TelemetryProviderService.unbindService(this, serviceConnection)
+        debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.replaying)
 
-            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.replaying)
-
-            TelemetryProviderService.bindService(
-                this,
-                ReplayService::class,
-                serviceConnection,
-                ReplayService.SourceType to ReplayService.SourceTypeCapture,
-                ReplayService.SourcePath to File(this.filesDir, fileName).absolutePath
-            )
-            state = State.ReplayCapture
-        }
+        TelemetryProviderService.bindService(
+            this,
+            ReplayService::class,
+            serviceConnection,
+            ReplayService.SourceType to ReplayService.SourceTypeCapture,
+            ReplayService.SourcePath to uri.toString()
+        )
+        state = State.ReplayCapture
     }
 
     private fun replayFromCrashReport(uri: Uri) {
@@ -224,9 +238,12 @@ class MainActivity : AppCompatActivity() {
         when (state) {
             State.ListenOnly -> startCapture()
             State.ListenRecording -> stopCapture()
-            State.ReplayCapture -> {}
-            State.ReplayCrashReport -> {}
-            State.None -> {}
+            State.ReplayCapture -> {
+            }
+            State.ReplayCrashReport -> {
+            }
+            State.None -> {
+            }
         }
     }
 
@@ -248,10 +265,41 @@ class MainActivity : AppCompatActivity() {
             val frameCount = service.stopRecording()
             Toast.makeText(this@MainActivity, "Captured $frameCount frames", Toast.LENGTH_SHORT)
                 .show()
+            captureSaveDialog()
         } else {
             Toast.makeText(this, "Capture wasn't enabled", Toast.LENGTH_SHORT).show()
         }
         debugFrameCountTextView.background = null
         state = State.ListenOnly
+    }
+
+    private fun captureSaveDialog() {
+        saveCaptureFile.launch("")
+    }
+
+    private fun moveCaptureFile(uri: Uri?) {
+        fileList().find { it == Recorder.LastestCaptureFilename }.also { fileName ->
+            if (fileName == null) {
+                Toast.makeText(this, "No capture found", Toast.LENGTH_SHORT).show()
+                return@also
+            }
+
+            val captureFile = File(this.filesDir, fileName)
+
+            if (uri != null) {
+                contentResolver.openOutputStream(uri).use { to ->
+                    if (to == null) {
+                        Toast.makeText(this, "Can't create target file", Toast.LENGTH_SHORT)
+                            .show()
+                        return@also
+                    }
+                    FileInputStream(captureFile).use { from ->
+                        from.copyTo(to)
+                    }
+                }
+                Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
+            }
+            captureFile.delete()
+        }
     }
 }
