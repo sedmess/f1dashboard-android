@@ -7,9 +7,9 @@ object TelemetryPacketDeserializer {
 
     private const val CarCount = 22
 
-    fun map(buffer: ByteBuffer): TelemetryPacket<out TelemetryData> {
+    fun map(packet: ByteArray): TelemetryPacket<out TelemetryData> {
+        val buffer = ByteBuffer.wrap(packet)
         buffer.order(ByteOrder.LITTLE_ENDIAN)
-        buffer.position(0)
         val header = mapHeader(buffer)
         return when (header.packetTypeId) {
             PackageType.CarTelemetryType.id -> {

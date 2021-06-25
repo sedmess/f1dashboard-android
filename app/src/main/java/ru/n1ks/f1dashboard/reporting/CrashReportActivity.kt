@@ -4,17 +4,17 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import org.acra.dialog.CrashReportDialogHelper
+import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import ru.n1ks.f1dashboard.R
 
 class CrashReportActivity : AppCompatActivity() {
 
-    private lateinit var helper: CrashReportDialogHelper
+    private lateinit var crashDataStoreHelper: CrashDataStoreHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            helper = CrashReportDialogHelper(this, intent)
+            crashDataStoreHelper = CrashDataStoreHelper(this)
             buildAndShowDialog()
         } catch (e: IllegalArgumentException) {
             finish()
@@ -26,26 +26,26 @@ class CrashReportActivity : AppCompatActivity() {
             .setTitle(R.string.crashReportTitle)
             .setMessage(R.string.crashReportText)
             .setPositiveButton(R.string.crashReportSendCaption) { _, _ ->
+                val errorDetails =
+                    CustomActivityOnCrash.getAllErrorDetailsFromIntent(this, intent) +
+                            (crashDataStoreHelper.load()[ReportingKeys.LastPacketsData]?.let { "\nLast packets:\n$it" } ?: "")
                 startActivity(
                     Intent.createChooser(
                         Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, helper.reportData.toJSON())
+                            putExtra(Intent.EXTRA_TEXT, errorDetails)
                             type = "text/plain"
                         },
                         getString(R.string.crashReportShareCaption)
                     )
                 )
-                helper.cancelReports()
+                crashDataStoreHelper.delete()
                 finish()
             }
             .setNegativeButton(R.string.crashReportCancelCaption) { _, _ ->
-                helper.cancelReports()
+                crashDataStoreHelper.delete()
                 finish()
             }
-            .create().apply {
-                setCanceledOnTouchOutside(false)
-                show()
-            }
+            .create().apply { setCanceledOnTouchOutside(false); show() }
     }
 }
