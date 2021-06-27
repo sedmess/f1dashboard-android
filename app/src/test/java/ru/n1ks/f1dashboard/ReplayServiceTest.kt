@@ -52,7 +52,7 @@ class ReplayServiceTest {
             assertEquals(55, typeCount[CarSetupDataPacket::class])
             assertEquals(864, typeCount[CarStatusDataPacket::class])
             assertEquals(864, typeCount[CarTelemetryDataPacket::class])
-            assertEquals(5, typeCount[ParticipantDataPacket::class])
+            assertEquals(   5, typeCount[ParticipantDataPacket::class])
             assertEquals(864, typeCount[LapDataPacket::class])
             assertEquals(864, typeCount[EmptyData::class])
         } finally {

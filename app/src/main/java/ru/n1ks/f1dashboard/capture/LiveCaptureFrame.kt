@@ -1,9 +1,18 @@
 package ru.n1ks.f1dashboard.capture
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
+import io.reactivex.schedulers.Schedulers
+import java.io.BufferedInputStream
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.zip.GZIPInputStream
 
 class LiveCaptureFrame(
     val timestamp: Long,
@@ -12,7 +21,30 @@ class LiveCaptureFrame(
 
     companion object {
 
-        fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
+        private const val TAG = "LiveCaptureFrame"
+
+        fun flow(captureInputStream: InputStream): Flowable<LiveCaptureFrame> {
+            val inputStream = GZIPInputStream(BufferedInputStream(captureInputStream))
+            Log.d(TAG, "open capture file ${captureInputStream.hashCode()}")
+            return Flowable.create<LiveCaptureFrame>(
+                {
+                    try {
+                        var frame = readFrom(inputStream)
+                        while (frame != null && !it.isCancelled) {
+                            it.onNext(frame)
+                            frame = readFrom(inputStream)
+                        }
+                    } catch (e: Exception) {
+                        Log.d(TAG, "can't read from stream: ${e.message}")
+                    } finally {
+                        it.onComplete()
+                    }
+                }, BackpressureStrategy.BUFFER
+            )
+                .doFinally { Log.d(TAG, "close capture file ${captureInputStream.hashCode()}"); captureInputStream.close() }
+        }
+
+        private fun readFrom(inputStream: InputStream): LiveCaptureFrame? {
             val buffer = ByteBuffer.allocate(Long.SIZE_BYTES + Int.SIZE_BYTES).apply {
                 order(ByteOrder.LITTLE_ENDIAN)
                 if (!readFromStream(inputStream)) {
