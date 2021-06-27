@@ -12,6 +12,7 @@ import ru.n1ks.f1dashboard.capture.LiveCaptureFrame
 import ru.n1ks.f1dashboard.reporting.ByteArraysJSONUtils
 import ru.n1ks.f1dashboard.reporting.PacketTail
 import java.io.BufferedInputStream
+import java.io.InputStream
 import java.util.zip.GZIPInputStream
 
 class ReplayService : TelemetryProviderService() {
@@ -24,6 +25,7 @@ class ReplayService : TelemetryProviderService() {
         const val NoDelays = "no_delays"
     }
 
+    private var inputStream: InputStream? = null
     private var messageFlow: Flowable<ByteArray>? = null
 
     override fun start(intent: Intent) {
@@ -32,20 +34,25 @@ class ReplayService : TelemetryProviderService() {
             SourceTypeCapture -> {
                 val sourcePath = intent.getStringExtra(SourcePath)
                     ?: throw IllegalArgumentException("$SourcePath extra not found")
-                val replayDelays = intent.getStringExtra(NoDelays).isNullOrEmpty()
+                val replayDelays = !intent.getBooleanExtra(NoDelays, false)
                 startFromCapture(sourcePath, replayDelays)
             }
             SourceTypeReport -> {
                 val sourcePath = intent.getStringExtra(SourcePath)
                     ?: throw IllegalArgumentException("$SourcePath extra not found")
-                val emulateDelays = intent.getStringExtra(NoDelays).isNullOrEmpty()
+                val emulateDelays = !intent.getBooleanExtra(NoDelays, false)
                 startFromReport(sourcePath, emulateDelays)
             }
             else -> throw IllegalArgumentException("$SourceType = $sourceType is invalid")
         }
     }
 
-    override fun stop() {}
+    override fun stop() {
+        try {
+            inputStream?.close()
+            inputStream = null
+        } catch (e: Exception) {}
+    }
 
     override fun flow(): Flowable<ByteArray> =
         messageFlow ?: throw IllegalStateException("service not initialized")
@@ -57,6 +64,7 @@ class ReplayService : TelemetryProviderService() {
         Log.d(TAG, "start replaying, replay delays = $replayDelays")
         var prevTS = 0L
         var counter = 0L
+        this.inputStream = inputStream
         messageFlow = Flowable.create<LiveCaptureFrame>(
             {
                 try {
