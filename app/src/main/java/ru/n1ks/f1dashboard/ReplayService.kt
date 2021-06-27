@@ -52,6 +52,7 @@ class ReplayService : TelemetryProviderService() {
             inputStream?.close()
             inputStream = null
         } catch (e: Exception) {}
+        messageFlow = null
     }
 
     override fun flow(): Flowable<ByteArray> =
@@ -59,30 +60,15 @@ class ReplayService : TelemetryProviderService() {
 
     private fun startFromCapture(sourcePath: String, replayDelays: Boolean) {
         val captureUri = Uri.parse(sourcePath)
-        val inputStream = contentResolver.openInputStream(captureUri)?.let { GZIPInputStream(BufferedInputStream(it)) } ?: throw IllegalArgumentException("can't open uri $captureUri")
-        Log.d(TAG, "open capture file $sourcePath")
         Log.d(TAG, "start replaying, replay delays = $replayDelays")
         var prevTS = 0L
         var counter = 0L
+        val inputStream = contentResolver.openInputStream(captureUri) ?: throw IllegalArgumentException("can't open uri $captureUri")
         this.inputStream = inputStream
-        messageFlow = Flowable.create<LiveCaptureFrame>(
-            {
-                try {
-                    var frame = LiveCaptureFrame.readFrom(inputStream)
-                    while (frame != null && !it.isCancelled) {
-                        it.onNext(frame)
-                        frame = LiveCaptureFrame.readFrom(inputStream)
-                    }
-                } catch (e: Exception) {
-                    Log.d(TAG, "can't read from stream: ${e.message}")
-                }
-                it.onComplete()
-            },
-            BackpressureStrategy.BUFFER)
+        messageFlow = LiveCaptureFrame.flow(inputStream)
             .subscribeOn(Schedulers.newThread())
             .doFinally {
-                Log.d(TAG, "close capture file $sourcePath, read $counter frames")
-                inputStream.close()
+                Log.d(TAG, "replay read $counter frames")
             }
             .doOnNext {
                 counter++
@@ -100,10 +86,9 @@ class ReplayService : TelemetryProviderService() {
 
     private fun startFromReport(reportPath: String, emulateDelays: Boolean) {
         val reportUri = Uri.parse(reportPath)
-        val packets = contentResolver.openInputStream(reportUri).use {
-            val inputStream = it ?: throw IllegalArgumentException("can't open uri $reportUri")
-            ByteArraysJSONUtils.fromJSON(inputStream.readBytes().decodeToString())
-        }
+        val packets = contentResolver.openInputStream(reportUri)?.use {
+            ByteArraysJSONUtils.fromJSON(it.readBytes().decodeToString())
+        } ?: throw IllegalArgumentException("can't open uri $reportUri")
         var counter = 0L
         messageFlow = packets.toFlowable()
             .subscribeOn(Schedulers.newThread())

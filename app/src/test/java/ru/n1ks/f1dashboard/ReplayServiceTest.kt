@@ -52,7 +52,7 @@ class ReplayServiceTest {
             assertEquals(55, typeCount[CarSetupDataPacket::class])
             assertEquals(864, typeCount[CarStatusDataPacket::class])
             assertEquals(864, typeCount[CarTelemetryDataPacket::class])
-            assertEquals(5, typeCount[ParticipantDataPacket::class])
+            assertEquals(   5, typeCount[ParticipantDataPacket::class])
             assertEquals(864, typeCount[LapDataPacket::class])
             assertEquals(864, typeCount[EmptyData::class])
         } finally {
@@ -67,6 +67,49 @@ class ReplayServiceTest {
             val captureFIS = startServiceForCaptureFile()
             replayService.onUnbind(null)
             assertThrows("Stream closed", IOException::class.java) { captureFIS.available() }
+        } finally {
+            replayService.onUnbind(null)
+        }
+    }
+
+    @Test
+    fun replayReportTest() {
+        val reportFile = File(javaClass.classLoader?.getResource("replay/report.json")!!.toURI())
+        val reportUri = Uri.fromFile(reportFile)
+        val reportFIS = FileInputStream(reportFile)
+        assertTrue(reportFIS.available() > 0)
+
+        try {
+            Shadows.shadowOf(replayService.contentResolver)
+                .registerInputStream(reportUri, reportFIS)
+
+            replayService.onBind(Intent().apply {
+                putExtra(ReplayService.SourcePath, reportUri.toString())
+                putExtra(ReplayService.NoDelays, true)
+                putExtra(ReplayService.SourceType, ReplayService.SourceTypeReport)
+            })
+
+            assertNotNull(replayService.flow())
+
+            var count = 0
+            val typeCount = HashMap<KClass<out TelemetryData>, Int>()
+            val waitLatch = CountDownLatch(1)
+            val disposable = replayService.flow()
+                .observeOn(Schedulers.single())
+                .doFinally { waitLatch.countDown() }
+                .doOnNext { count++ }
+                .map { TelemetryPacketDeserializer.map(it) }
+                .subscribe { assertNotNull(it); typeCount.compute(it.data::class) { _, v -> v?.plus(1) ?: 1 } }
+            waitLatch.await()
+
+            disposable.dispose()
+
+            assertThrows("Stream closed", IOException::class.java) { reportFIS.available() }
+            assertEquals(10, count)
+            assertEquals(2, typeCount[CarStatusDataPacket::class])
+            assertEquals(2, typeCount[CarTelemetryDataPacket::class])
+            assertEquals(3, typeCount[LapDataPacket::class])
+            assertEquals(3, typeCount[EmptyData::class])
         } finally {
             replayService.onUnbind(null)
         }
