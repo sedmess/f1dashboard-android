@@ -17,9 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.rxkotlin.toSingle
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import ru.n1ks.f1dashboard.capture.Recorder
 import ru.n1ks.f1dashboard.livedata.LiveData
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
                 }"
             )
             .create()
-        dialog.toSingle()
+        Single.just(dialog)
             .delay(5, TimeUnit.SECONDS)
             .subscribe { it -> if (it.isShowing) it.dismiss() }
         dialog.show()

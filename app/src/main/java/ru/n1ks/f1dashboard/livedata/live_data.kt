@@ -6,8 +6,8 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.toSingle
 import ru.n1ks.f1dashboard.*
 import ru.n1ks.f1dashboard.model.*
 import java.text.DecimalFormat
@@ -324,7 +324,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             bbField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
             bbField.tag = tag
-            bbField.toSingle()
+            Single.just(bbField)
                 .delay(1000, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { field ->
@@ -347,7 +347,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
             diffField.background = getDrawable(R.color.warn)
             val tag = System.nanoTime()
             diffField.tag = tag
-            diffField.toSingle()
+            Single.just(diffField)
                 .delay(1000, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { field ->
