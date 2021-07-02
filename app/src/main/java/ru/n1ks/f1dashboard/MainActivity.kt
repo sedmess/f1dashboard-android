@@ -17,9 +17,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import ru.n1ks.f1dashboard.capture.Recorder
 import ru.n1ks.f1dashboard.livedata.LiveData
@@ -27,6 +29,7 @@ import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
 import java.io.File
 import java.io.FileInputStream
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +45,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var debugFrameCountTextView: TextView
 
+    private lateinit var systemTimeTextView: TextView
+
     private lateinit var serviceConnection: TelemetryProviderService.Connection
+
+    private lateinit var systemTimeWatcherDisposable: Disposable
 
     private lateinit var liveData: LiveData
 
@@ -80,6 +87,16 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener { toggleReplay() }
             setOnLongClickListener { toggleCapture(); true }
         }
+
+        val dateTimeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        systemTimeTextView = findViewById(R.id.systemTimeValue)
+        systemTimeWatcherDisposable = Observable.just(true)
+            .subscribeOn(Schedulers.newThread())
+            .repeat()
+            .delay(1, TimeUnit.SECONDS)
+            .map { dateTimeFormat.format(Date()) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { systemTimeTextView.text = it }
 
         liveData = LiveData(this, LiveDataFields)
 
@@ -139,6 +156,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         state = State.None
+
+        systemTimeWatcherDisposable.dispose()
 
         super.onStop()
     }
