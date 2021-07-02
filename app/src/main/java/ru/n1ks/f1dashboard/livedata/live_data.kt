@@ -46,7 +46,7 @@ data class Competitor(
     val positionString: String
         get() = position.toString().padEnd(2, ' ')
 
-    val isTyresNew: Boolean
+    val areTyresNew: Boolean
         get() = tyreAge < 3
 
     val tyreTypeValue: String
@@ -641,7 +641,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     aheadTyreField.text = context.ahead.tyreTypeValue
                     aheadTyreField.setTextColor(getColor(context.ahead.tyreTyreColor))
                     aheadTyreField.background =
-                        if (context.ahead.isTyresNew) getDrawable(R.color.tyreNew) else null
+                        if (context.ahead.areTyresNew) getDrawable(R.color.tyreNew) else null
                 } else {
                     aheadDriverField.text = "XX"
                     aheadTimeField.text = "X:XX.XXX"
@@ -676,7 +676,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     ahead2TyreField.text = context.ahead2.tyreTypeValue
                     ahead2TyreField.setTextColor(getColor(context.ahead2.tyreTyreColor))
                     ahead2TyreField.background =
-                        if (context.ahead2.isTyresNew) getDrawable(R.color.tyreNew) else null
+                        if (context.ahead2.areTyresNew) getDrawable(R.color.tyreNew) else null
                 } else {
                     ahead2DriverField.text = "XX"
                     ahead2TimeField.text = "X:XX.XXX"
@@ -705,7 +705,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     playerTyreField.text = context.player.tyreTypeValue
                     playerTyreField.setTextColor(getColor(context.player.tyreTyreColor))
                     playerTyreField.background =
-                        if (context.player.isTyresNew) getDrawable(R.color.tyreNew) else null
+                        if (context.player.areTyresNew) getDrawable(R.color.tyreNew) else null
                 } else {
                     playerBestTimeField.text = "X:XX.XXX"
                     playerLastTimeField.text = "X:XX.XXX"
@@ -742,7 +742,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     behindTyreFiled.text = context.behind.tyreTypeValue
                     behindTyreFiled.setTextColor(getColor(context.behind.tyreTyreColor))
                     behindTyreFiled.background =
-                        if (context.behind.isTyresNew) getDrawable(R.color.tyreNew) else null
+                        if (context.behind.areTyresNew) getDrawable(R.color.tyreNew) else null
 
                 } else {
                     behindDriverField.text = "XX"
@@ -781,8 +781,7 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                     behind2TyreFiled.text = context.behind2.tyreTypeValue
                     behind2TyreFiled.setTextColor(getColor(context.behind2.tyreTyreColor))
                     behind2TyreFiled.background =
-                        if (context.behind2.isTyresNew) getDrawable(R.color.tyreNew) else null
-
+                        if (context.behind2.areTyresNew) getDrawable(R.color.tyreNew) else null
                 } else {
                     behind2DriverField.text = "XX"
                     behind2TimeField.text = "X:XX.XXX"
