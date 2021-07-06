@@ -14,4 +14,11 @@
     <string name="drsCaption">drs</string>
     <string name="bbCaption">BB</string>
     <string name="diffCaption">diff</string>
+    <string name="dialog_capture_save_cancel_confirm">Do you really want not to save the last capture?</string>
+    <string name="dialog_capture_save_cancel_yes">Yes, delete it</string>
+    <string name="dialog_capture_save_cancel_no">No, save it</string>
+    <string name="dialog_replay_title">Replay</string>
+    <string name="dialog_replay_message">Source of replay</string>
+    <string name="dialog_replay_capture_file">Capture file</string>
+    <string name="dialog_replay_report_file">Crash report JSON file</string>
 </resources>

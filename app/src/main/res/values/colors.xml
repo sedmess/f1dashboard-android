@@ -7,6 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="shadowedWhite">#4C4C4C</color>
     <color name="fastestText">#AA84FF</color>
     <color name="inop">#818181</color>
     <color name="warn">#8F3416</color>
@@ -47,5 +48,7 @@
     <color name="tyreS">#F9EE25</color>
     <color name="tyreM">#FFFFFF</color>
     <color name="tyreH">#FF8F00</color>
-    <color name="tyreNew">#5CFFCDD2</color>
+    <color name="tyreNew">#AE00BCD4</color>
+    <color name="recoring">#8F3416</color>
+    <color name="replaying">#467127</color>
 </resources>

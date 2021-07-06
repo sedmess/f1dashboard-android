@@ -762,8 +762,19 @@
                     android:textColor="@color/white"
                     android:textSize="@dimen/fontSize"
                     android:typeface="normal" />
+
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/systemTimeValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="XX:XX"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textColor="@color/shadowedWhite"
+                android:textSize="@dimen/fontSize"
+                android:typeface="normal" />
         </LinearLayout>
 
     </LinearLayout>
