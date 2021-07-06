@@ -2,4 +2,5 @@
 
 Codemasters F1 2020 car dashboard for android phones
 
-![200320800178_101392](https://user-images.githubusercontent.com/4758297/119716820-36ccbf00-be6e-11eb-9f8a-46c74498eb87.jpg)
+![Screenshot_2021-07-01-22-45-40-157_ru n1ks f1dashboard](https://user-images.githubusercontent.com/4758297/124568214-5aabf900-de4d-11eb-9fc5-7e613570752c.jpg)
+
