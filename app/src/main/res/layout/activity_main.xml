@@ -195,6 +195,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
                 android:layout_gravity="top"
+                android:layout_margin="4sp"
+                android:layout_weight="0.05"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/sector1Value"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:textSize="@dimen/smartFortSize"
+                    android:background="@color/inop"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textAlignment="center"
+                    />
+
+                <TextView
+                    android:id="@+id/sector2Value"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:textSize="@dimen/smartFortSize"
+                    android:background="@color/inop"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textAlignment="center"
+                    />
+
+                <TextView
+                    android:id="@+id/sector3Value"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.33"
+                    android:textSize="@dimen/smartFortSize"
+                    android:background="@color/inop"
+                    android:text=""
+                    android:textColor="@color/white"
+                    android:textAlignment="center"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_gravity="top"
                 android:layout_margin="16sp"
                 android:layout_weight="0.15"
                 android:orientation="horizontal">
@@ -493,15 +539,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
-                android:layout_weight="0.2"
+                android:layout_weight="0.10"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/sessionTimeValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/fontSize"
                     android:textAlignment="center"
+                    android:text="XX:XX"
                     android:textColor="@color/white"
                     />
 

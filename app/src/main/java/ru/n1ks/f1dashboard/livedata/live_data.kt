@@ -133,6 +133,12 @@ class LiveDataField<T>(
     }
 }
 
+data class SectorsIndicatorField(
+    val overallVestS1Time: Double,
+    val overallBestS2Time: Double,
+    val overallBestS3Time: Double
+)
+
 data class LapsField(
     val lapsCount: Int,
     val currentLap: Int
@@ -353,6 +359,17 @@ val LiveDataFields = listOf<LiveDataField<*>>(
                 .subscribe { field ->
                     if (field.tag == tag) field.background = getDrawable(R.color.black)
                 }
+        }
+    ),
+    LiveDataField(
+        "sectorIndicator",
+        0,
+        { data, packet ->
+
+            return@LiveDataField data
+        },
+        {
+
         }
     ),
     LiveDataField(
