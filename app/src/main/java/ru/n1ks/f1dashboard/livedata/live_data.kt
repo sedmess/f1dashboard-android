@@ -26,6 +26,10 @@ enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
 }
 
+enum class PaceIndicator {
+    OverallBest, PersonalBest, Worse, NotSet
+}
+
 data class CompetitorDriver(
     val code: Int,
     val driver: ParticipantData.Driver
@@ -134,9 +138,9 @@ class LiveDataField<T>(
 }
 
 data class SectorsIndicatorField(
-    val overallVestS1Time: Double,
-    val overallBestS2Time: Double,
-    val overallBestS3Time: Double
+    val s1Pace: PaceIndicator = PaceIndicator.NotSet,
+    val s2Pace: PaceIndicator = PaceIndicator.NotSet,
+    val s3Pace: PaceIndicator = PaceIndicator.NotSet
 )
 
 data class LapsField(
@@ -363,9 +367,12 @@ val LiveDataFields = listOf<LiveDataField<*>>(
     ),
     LiveDataField(
         "sectorIndicator",
-        0,
+        SectorsIndicatorField(),
         { data, packet ->
+            packet.asType<LapDataPacket> {
+                val playerData = it.data.items[it.header.playerCarIndex]
 
+            }
             return@LiveDataField data
         },
         {

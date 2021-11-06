@@ -2,6 +2,7 @@ package ru.n1ks.f1dashboard
 
 internal object Bytes {
 
+    const val Zero = 0.toByte()
     const val One = 1.toByte()
     const val Two = 2.toByte()
 }
