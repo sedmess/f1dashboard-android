@@ -26,8 +26,8 @@ enum class DrsCommonState {
     Available, Unavailable, Upcoming, Fault
 }
 
-enum class PaceIndicator {
-    OverallBest, PersonalBest, Worse, NotSet
+enum class PaceIndicator(val color: Int) {
+    OverallBest(R.color.fastestTime), PersonalBest(R.color.betterTime), Worse(R.color.worseTime), NotSet(R.color.inop)
 }
 
 data class CompetitorDriver(
@@ -141,7 +141,17 @@ data class SectorsIndicatorField(
     val s1Pace: PaceIndicator = PaceIndicator.NotSet,
     val s2Pace: PaceIndicator = PaceIndicator.NotSet,
     val s3Pace: PaceIndicator = PaceIndicator.NotSet
-)
+) {
+
+    fun setS1Pace(pace: PaceIndicator): SectorsIndicatorField =
+        if (pace == this.s1Pace) this else this.copy(s1Pace = pace)
+
+    fun setS2Pace(pace: PaceIndicator): SectorsIndicatorField =
+        if (pace == this.s2Pace) this else this.copy(s2Pace = pace)
+
+    fun setS3Pace(pace: PaceIndicator): SectorsIndicatorField =
+        if (pace == this.s3Pace) this else this.copy(s3Pace = pace)
+}
 
 data class LapsField(
     val lapsCount: Int,
@@ -371,12 +381,27 @@ val LiveDataFields = listOf<LiveDataField<*>>(
         { data, packet ->
             packet.asType<LapDataPacket> {
                 val playerData = it.data.items[it.header.playerCarIndex]
-
+                if (playerData.currentLapNum < 2) {
+                    return@LiveDataField data
+                }
+                if (playerData.sector == Bytes.One) {
+                    return@LiveDataField data.setS1Pace(if (playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse).setS2Pace(PaceIndicator.NotSet).setS3Pace(PaceIndicator.NotSet)
+                }
+                if (playerData.sector == Bytes.Two) {
+                    return@LiveDataField data.setS2Pace(if (playerData.sector2TimeInMS <= playerData.bestLapSector2TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse).setS3Pace(PaceIndicator.NotSet)
+                }
+                return@LiveDataField data.setS3Pace(
+                    if ((playerData.lastLapTime * 1000 - playerData.sector1TimeInMS - playerData.sector2TimeInMS).toInt()
+                            .toShort() <= playerData.bestLapSector3TimeInMS
+                    ) PaceIndicator.PersonalBest else PaceIndicator.Worse
+                )
             }
             return@LiveDataField data
         },
         {
-
+            findViewById<TextView>(R.id.sector1Value).background = getDrawable(it.s1Pace.color)
+            findViewById<TextView>(R.id.sector2Value).background = getDrawable(it.s2Pace.color)
+            findViewById<TextView>(R.id.sector3Value).background = getDrawable(it.s3Pace.color)
         }
     ),
     LiveDataField(
