@@ -1,6 +1,5 @@
 package ru.n1ks.f1dashboard
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.net.Uri
@@ -19,11 +18,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.addTo
 import ru.n1ks.f1dashboard.Properties.Companion.loadProperties
 import ru.n1ks.f1dashboard.capture.Recorder
 import ru.n1ks.f1dashboard.livedata.LiveData
-import ru.n1ks.f1dashboard.livedata.LiveDataFields
 import ru.n1ks.f1dashboard.model.TelemetryPacketDeserializer
 import java.io.File
 import java.io.FileInputStream
@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private enum class State {
         None, ListenOnly, ListenRecording, ReplayCapture, ReplayCrashReport
     }
+
+    private val compositeDisposable = CompositeDisposable()
 
     private lateinit var debugFrameCountTextView: TextView
 
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             setOnLongClickListener { toggleCapture(); true }
         }
 
-        liveData = LiveData(this, LiveDataFields)
+        liveData = LiveData(this)
 
         serviceConnection = object : TelemetryProviderService.Connection {
 
@@ -159,7 +161,11 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
-    @SuppressLint("CheckResult")
+    override fun onDestroy() {
+        compositeDisposable.dispose()
+        super.onDestroy()
+    }
+
     private fun showEndpoint() {
         val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION") val ipAddress =
@@ -177,6 +183,7 @@ class MainActivity : AppCompatActivity() {
         Single.just(dialog)
             .delay(5, TimeUnit.SECONDS)
             .subscribe { it -> if (it.isShowing) it.dismiss() }
+            .addTo(compositeDisposable)
         dialog.show()
     }
 
