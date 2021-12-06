@@ -202,37 +202,43 @@
                 <TextView
                     android:id="@+id/sector1Value"
                     android:layout_width="0dip"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="0.33"
-                    android:textSize="@dimen/smartFortSize"
                     android:background="@color/inop"
                     android:text=""
-                    android:textColor="@color/white"
-                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
                     />
 
                 <TextView
                     android:id="@+id/sector2Value"
                     android:layout_width="0dip"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="0.33"
-                    android:textSize="@dimen/smartFortSize"
                     android:background="@color/inop"
                     android:text=""
-                    android:textColor="@color/white"
-                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
                     />
 
                 <TextView
                     android:id="@+id/sector3Value"
                     android:layout_width="0dip"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="0.33"
-                    android:textSize="@dimen/smartFortSize"
                     android:background="@color/inop"
+                    android:textColor="@color/black"
                     android:text=""
-                    android:textColor="@color/white"
-                    android:textAlignment="center"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
                     />
 
             </LinearLayout>
@@ -304,7 +310,7 @@
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -350,7 +356,7 @@
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -393,7 +399,7 @@
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -438,7 +444,7 @@
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -483,7 +489,7 @@
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -624,7 +630,7 @@
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
 
@@ -685,7 +691,7 @@
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>
@@ -708,7 +714,7 @@
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>
@@ -764,7 +770,7 @@
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>

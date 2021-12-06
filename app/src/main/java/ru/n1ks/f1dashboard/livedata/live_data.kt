@@ -142,18 +142,21 @@ class LiveDataField<T>(
 
 data class SectorsIndicatorField(
     val s1Pace: PaceIndicator = PaceIndicator.NotSet,
+    val s1Time: Short = 0,
     val s2Pace: PaceIndicator = PaceIndicator.NotSet,
-    val s3Pace: PaceIndicator = PaceIndicator.NotSet
+    val s2Time: Short = 0,
+    val s3Pace: PaceIndicator = PaceIndicator.NotSet,
+    val s3Time: Short = 0
 ) {
 
-    fun setS1Pace(pace: PaceIndicator): SectorsIndicatorField =
-        if (pace == this.s1Pace) this else this.copy(s1Pace = pace)
+    fun setS1Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+        if (time == this.s1Time && pace == this.s1Pace) this else this.copy(s1Pace = pace, s1Time = time)
 
-    fun setS2Pace(pace: PaceIndicator): SectorsIndicatorField =
-        if (pace == this.s2Pace) this else this.copy(s2Pace = pace)
+    fun setS2Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+        if (time == this.s2Time && pace == this.s2Pace) this else this.copy(s2Pace = pace, s2Time = time)
 
-    fun setS3Pace(pace: PaceIndicator): SectorsIndicatorField =
-        if (pace == this.s3Pace) this else this.copy(s3Pace = pace)
+    fun setS3Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+        if (time == this.s3Time && pace == this.s3Pace) this else this.copy(s3Pace = pace, s3Time = time)
 }
 
 data class LapsField(
@@ -191,11 +194,12 @@ data class TypesField(
 private val secondsAndMsFormat: DecimalFormat = DecimalFormat("00.000")
 private val secondsFormat: DecimalFormat = DecimalFormat("00")
 private val fuelFormat: DecimalFormat = DecimalFormat("+#,#0.00;-#")
+private const val timeNotSet = "X:XX.XXX"
 private val timeFormatter: (Float) -> String = {
     val n1 = it.toInt() / 60
     val n2 = it % 60
     if (n1 == 0 && n2.absoluteValue < 0.001f) {
-        "X:XX.XXX"
+        timeNotSet
     } else {
         "${n1}:${secondsAndMsFormat.format(n2)}"
     }
@@ -358,27 +362,40 @@ class LiveData (
             { data, packet ->
                 packet.asType<LapDataPacket> {
                     val playerData = it.data.items[it.header.playerCarIndex]
-                    if (playerData.currentLapNum < 2) {
-                        return@LiveDataField data
+                    if (playerData.driverStatus != LapData.DriverStatus.FlyingLap && playerData.driverStatus != LapData.DriverStatus.OnTrack) {
+                        return@LiveDataField SectorsIndicatorField()
+                    }
+                    if (playerData.sector == Bytes.Zero) {
+                        if (playerData.currentLapNum < 2) {
+                            return@LiveDataField data
+                        }
+                        val s3Time =
+                            (playerData.lastLapTime * 1000 - playerData.sector1TimeInMS - playerData.sector2TimeInMS).toInt()
+                                .toShort()
+                        return@LiveDataField data.setS3Pace(if (s3Time <= playerData.bestLapSector3TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, s3Time)
                     }
                     if (playerData.sector == Bytes.One) {
-                        return@LiveDataField data.setS1Pace(if (playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse).setS2Pace(PaceIndicator.NotSet).setS3Pace(PaceIndicator.NotSet)
+                        return@LiveDataField data.setS1Pace(if (playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector1TimeInMS).setS2Pace(PaceIndicator.NotSet, 0).setS3Pace(PaceIndicator.NotSet, 0)
                     }
                     if (playerData.sector == Bytes.Two) {
-                        return@LiveDataField data.setS2Pace(if (playerData.sector2TimeInMS <= playerData.bestLapSector2TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse).setS3Pace(PaceIndicator.NotSet)
+                        return@LiveDataField data.setS2Pace(if (playerData.sector2TimeInMS <= playerData.bestLapSector2TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector2TimeInMS).setS3Pace(PaceIndicator.NotSet, 0)
                     }
-                    return@LiveDataField data.setS3Pace(
-                        if ((playerData.lastLapTime * 1000 - playerData.sector1TimeInMS - playerData.sector2TimeInMS).toInt()
-                                .toShort() <= playerData.bestLapSector3TimeInMS
-                        ) PaceIndicator.PersonalBest else PaceIndicator.Worse
-                    )
                 }
                 return@LiveDataField data
             },
             {
-                findViewById<TextView>(R.id.sector1Value).background = getDrawable(it.s1Pace.color)
-                findViewById<TextView>(R.id.sector2Value).background = getDrawable(it.s2Pace.color)
-                findViewById<TextView>(R.id.sector3Value).background = getDrawable(it.s3Pace.color)
+                findViewById<TextView>(R.id.sector1Value).apply {
+                    background = getDrawable(it.s1Pace.color)
+                    text = timeFormatter(it.s1Time.toFloat() / 1000)
+                }
+                findViewById<TextView>(R.id.sector2Value).apply {
+                    background = getDrawable(it.s2Pace.color)
+                    text = timeFormatter(it.s2Time.toFloat() / 1000)
+                }
+                    findViewById<TextView>(R.id.sector3Value).apply {
+                        background = getDrawable(it.s3Pace.color)
+                        text = timeFormatter(it.s3Time.toFloat() / 1000)
+                    }
             }
         ),
         LiveDataField(
@@ -670,7 +687,7 @@ class LiveData (
                             if (context.ahead.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
                         aheadDriverField.text = "XX"
-                        aheadTimeField.text = "X:XX.XXX"
+                        aheadTimeField.text = timeNotSet
                         aheadTimeField.setTextColor(getColor(R.color.white))
                         aheadTyreField.text = "X"
                         aheadTyreField.setTextColor(getColor(R.color.white))
@@ -705,7 +722,7 @@ class LiveData (
                             if (context.ahead2.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
                         ahead2DriverField.text = "XX"
-                        ahead2TimeField.text = "X:XX.XXX"
+                        ahead2TimeField.text = timeNotSet
                         ahead2TimeField.setTextColor(getColor(R.color.white))
                         ahead2TyreField.text = "X"
                         ahead2TyreField.setTextColor(getColor(R.color.white))
@@ -733,8 +750,8 @@ class LiveData (
                         playerTyreField.background =
                             if (context.player.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
-                        playerBestTimeField.text = "X:XX.XXX"
-                        playerLastTimeField.text = "X:XX.XXX"
+                        playerBestTimeField.text = timeNotSet
+                        playerLastTimeField.text = timeNotSet
                         playerTyreField.text = "X"
                         playerTyreField.setTextColor(getColor(R.color.white))
                         playerTyreField.background = null
@@ -772,7 +789,7 @@ class LiveData (
 
                     } else {
                         behindDriverField.text = "XX"
-                        behindTimeField.text = "X:XX.XXX"
+                        behindTimeField.text = timeNotSet
                         behindTimeField.setTextColor(getColor(R.color.white))
                         behindTyreFiled.text = "X"
                         behindTyreFiled.setTextColor(getColor(R.color.white))
@@ -810,7 +827,7 @@ class LiveData (
                             if (context.behind2.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
                         behind2DriverField.text = "XX"
-                        behind2TimeField.text = "X:XX.XXX"
+                        behind2TimeField.text = timeNotSet
                         behind2TimeField.setTextColor(getColor(R.color.white))
                         behind2TyreFiled.text = "X"
                         behind2TyreFiled.setTextColor(getColor(R.color.white))
