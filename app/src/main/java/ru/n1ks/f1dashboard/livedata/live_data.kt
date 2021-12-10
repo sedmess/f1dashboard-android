@@ -124,22 +124,6 @@ data class TyreStateField(
     }
 }
 
-class LiveDataField<T>(
-    val name: String,
-    private var data: T,
-    private val extractDataFunc: (data: T, packet: TelemetryPacket<*>) -> T,
-    private val onUpdateFunc: ViewProvider.(T) -> Unit
-) {
-
-    fun onUpdate(viewProvider: ViewProvider, update: TelemetryPacket<*>) {
-        val newData = extractDataFunc(this.data, update)
-        if (newData == data)
-            return
-        data = newData
-        onUpdateFunc(viewProvider, data)
-    }
-}
-
 data class SectorsIndicatorField(
     val s1Pace: PaceIndicator = PaceIndicator.NotSet,
     val s1Time: Short = 0,
@@ -215,7 +199,11 @@ class LiveData (
     private val fields = listOf<LiveDataField<*>>(
         LiveDataField(
             "lapRemaining",
-            LapsField(0, 0),
+            { LapsField(0, 0) },
+            {
+                val lapField = findViewById<TextView>(R.id.lapValue)
+                lapField.text = "X"
+            },
             { data, packet ->
                 packet.asType<SessionDataPacket> {
                     val totalLaps = it.data.totalLaps.toInt()
@@ -241,7 +229,11 @@ class LiveData (
         ),
         LiveDataField(
             "fuelRemaining",
-            0.0f,
+            { 0.0f },
+            {
+                val fuelField = findViewById<TextView>(R.id.fuelValue)
+                fuelField.text = "+X.XX"
+            },
             { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].fuelRemainingLaps
@@ -255,7 +247,11 @@ class LiveData (
         ),
         LiveDataField(
             "fuelMixMode",
-            0,
+            { 0 },
+            {
+                val fuelField = findViewById<TextView>(R.id.fuelValue)
+                fuelField.background = getDrawable(R.color.inop)
+            },
             { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].fuelMix
@@ -282,7 +278,12 @@ class LiveData (
         ),
         LiveDataField(
             "ersMode",
-            -1,
+            { -1 },
+            {
+                val ersField = findViewById<TextView>(R.id.ersValue)
+                ersField.text = "X"
+                ersField.background = getDrawable(R.color.inop)
+            },
             { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].ersDeployMode.toInt()
@@ -310,7 +311,11 @@ class LiveData (
         ),
         LiveDataField(
             "bb",
-            0,
+            { 0 },
+            {
+                val bbField = findViewById<TextView>(R.id.bbValue)
+                bbField.text = "X"
+            },
             { data, packet ->
                 packet.asType<CarSetupDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].brakeBias.toInt()
@@ -334,7 +339,11 @@ class LiveData (
         ),
         LiveDataField(
             "diff",
-            0,
+            { 0 },
+            {
+                val diffField = findViewById<TextView>(R.id.diffValue)
+                diffField.text = "X"
+            },
             { data, packet ->
                 packet.asType<CarSetupDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].onThrottle.toInt()
@@ -358,7 +367,21 @@ class LiveData (
         ),
         LiveDataField(
             "sectorIndicator",
-            SectorsIndicatorField(),
+            { SectorsIndicatorField() },
+            {
+                findViewById<TextView>(R.id.sector1Value).apply {
+                    background = getDrawable(R.color.inop)
+                    text = ""
+                }
+                findViewById<TextView>(R.id.sector2Value).apply {
+                    background = getDrawable(R.color.inop)
+                    text = ""
+                }
+                findViewById<TextView>(R.id.sector3Value).apply {
+                    background = getDrawable(R.color.inop)
+                    text = ""
+                }
+            },
             { data, packet ->
                 packet.asType<LapDataPacket> {
                     val playerData = it.data.items[it.header.playerCarIndex]
@@ -392,15 +415,19 @@ class LiveData (
                     background = getDrawable(it.s2Pace.color)
                     text = timeFormatter(it.s2Time.toFloat() / 1000)
                 }
-                    findViewById<TextView>(R.id.sector3Value).apply {
-                        background = getDrawable(it.s3Pace.color)
-                        text = timeFormatter(it.s3Time.toFloat() / 1000)
-                    }
+                findViewById<TextView>(R.id.sector3Value).apply {
+                    background = getDrawable(it.s3Pace.color)
+                    text = timeFormatter(it.s3Time.toFloat() / 1000)
+                }
             }
         ),
         LiveDataField(
             "recommendedGear",
-            0,
+            { 0 },
+            {
+                val recommendedGearField = findViewById<TextView>(R.id.recommendedGearValue)
+                recommendedGearField.text = ""
+            },
             { data, packet ->
                 packet.asType<CarTelemetryDataPacket> {
                     return@LiveDataField it.data.suggestedGear.toInt()
@@ -418,8 +445,13 @@ class LiveData (
         ),
         LiveDataField(
             "drsState",
-            data = DrsField(DrsCommonState.Unavailable, isAllowed = false, isOpened = false),
-            extractDataFunc = { data, packet ->
+            { DrsField(DrsCommonState.Unavailable, isAllowed = false, isOpened = false) },
+            {
+                val drsField = findViewById<TextView>(R.id.drsValue)
+                drsField.text = "-"
+                drsField.background = null
+            },
+            { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     val carStatusData = it.data.items[it.header.playerCarIndex]
                     when {
@@ -448,13 +480,13 @@ class LiveData (
                 }
                 return@LiveDataField data
             },
-            onUpdateFunc = {
+            {
                 val drsField = findViewById<TextView>(R.id.drsValue)
                 when (it.state) {
                     DrsCommonState.Unavailable -> {
                         drsField.text = "X"
                         if (it.isOpened)
-                            drsField.background = getDrawable(R.color.black)
+                            drsField.background = null
                         else
                             drsField.background = getDrawable(R.color.warn)
                     }
@@ -472,7 +504,7 @@ class LiveData (
                             drsField.background = getDrawable(R.color.warn)
                         } else {
                             drsField.text = "-"
-                            drsField.background = getDrawable(R.color.black)
+                            drsField.background = null
                         }
                     }
                 }
@@ -480,7 +512,27 @@ class LiveData (
         ),
         LiveDataField(
             "rivals",
-            RivalsField(ahead2 = null, ahead = null, player = null, behind = null, behind2 = null),
+            { RivalsField(ahead2 = null, ahead = null, player = null, behind = null, behind2 = null) },
+            {
+                findViewById<TextView>(R.id.myBestValue).apply {
+                    text = timeNotSet
+                }
+                sequenceOf(R.id.aheadDriverValue, R.id.ahead2DriverValue, R.id.behindDriverValue, R.id.behind2DriverValue).map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.text = "X"
+                    }
+                sequenceOf(R.id.myTimeValue, R.id.aheadTimeValue, R.id.ahead2TimeValue, R.id.behindTimeValue, R.id.behind2TimeValue).map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.text = timeNotSet
+                        it.setTextColor(getColor(R.color.white))
+                    }
+                sequenceOf(R.id.myTyreValue, R.id.aheadTyreValue, R.id.ahead2TyreValue, R.id.behindTyreValue, R.id.behind2TyreValue).map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.text = "X"
+                        it.setTextColor(getColor(R.color.white))
+                        it.background = null
+                    }
+            },
             { data, packet ->
                 packet.asType<LapDataPacket> { it ->
                     val playerData = it.data.items[it.header.playerCarIndex]
@@ -686,7 +738,7 @@ class LiveData (
                         aheadTyreField.background =
                             if (context.ahead.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
-                        aheadDriverField.text = "XX"
+                        aheadDriverField.text = "X"
                         aheadTimeField.text = timeNotSet
                         aheadTimeField.setTextColor(getColor(R.color.white))
                         aheadTyreField.text = "X"
@@ -721,7 +773,7 @@ class LiveData (
                         ahead2TyreField.background =
                             if (context.ahead2.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
-                        ahead2DriverField.text = "XX"
+                        ahead2DriverField.text = "X"
                         ahead2TimeField.text = timeNotSet
                         ahead2TimeField.setTextColor(getColor(R.color.white))
                         ahead2TyreField.text = "X"
@@ -788,7 +840,7 @@ class LiveData (
                             if (context.behind.areTyresNew) getDrawable(R.color.tyreNew) else null
 
                     } else {
-                        behindDriverField.text = "XX"
+                        behindDriverField.text = "X"
                         behindTimeField.text = timeNotSet
                         behindTimeField.setTextColor(getColor(R.color.white))
                         behindTyreFiled.text = "X"
@@ -826,7 +878,7 @@ class LiveData (
                         behind2TyreFiled.background =
                             if (context.behind2.areTyresNew) getDrawable(R.color.tyreNew) else null
                     } else {
-                        behind2DriverField.text = "XX"
+                        behind2DriverField.text = "X"
                         behind2TimeField.text = timeNotSet
                         behind2TimeField.setTextColor(getColor(R.color.white))
                         behind2TyreFiled.text = "X"
@@ -838,11 +890,14 @@ class LiveData (
         ),
         LiveDataField(
             "bestTime",
-            BestLapField(
+            { BestLapField(
                 competitorId = -1,
                 driver = null,
                 bestLapTime = 0.0f
-            ),
+            ) },
+            {
+                findViewById<TextView>(R.id.bestSessionTime).text = timeNotSet
+            },
             { data, packet ->
                 packet.asType<LapDataPacket> {
                     val bestLapTime = it.data.items.filter { it.bestLapTime > 0 }
@@ -883,18 +938,47 @@ class LiveData (
                 return@LiveDataField data
             },
             {
-                (findViewById(R.id.bestSessionTime) as TextView).text =
+                findViewById<TextView>(R.id.bestSessionTime).text =
                     timeFormatter(it.bestLapTime) + " " + (it.driver?.name ?: "")
             }
         ),
         LiveDataField(
             "tyres",
-            TypesField(
-                tyreFL = TyreStateField(0, 0, 0),
-                tyreFR = TyreStateField(0, 0, 0),
-                tyreRL = TyreStateField(0, 0, 0),
-                tyreRR = TyreStateField(0, 0, 0)
-            ),
+            {
+                TypesField(
+                    tyreFL = TyreStateField(0, 0, 0),
+                    tyreFR = TyreStateField(0, 0, 0),
+                    tyreRL = TyreStateField(0, 0, 0),
+                    tyreRR = TyreStateField(0, 0, 0)
+                )
+            },
+            {
+                sequenceOf(
+                    R.id.surfaceFLValue,
+                    R.id.surfaceFRValue,
+                    R.id.surfaceRLValue,
+                    R.id.surfaceRRValue,
+                    R.id.innerFLValue,
+                    R.id.innerFRValue,
+                    R.id.innerRLValue,
+                    R.id.innerRRValue
+                )
+                    .map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.background = getDrawable(R.color.inop)
+                    }
+                sequenceOf(
+                    R.id.wearFLValue,
+                    R.id.wearFRValue,
+                    R.id.wearRLValue,
+                    R.id.wearRRValue,
+                )
+                    .map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.text = "X"
+                        it.background = getDrawable(R.color.inop)
+                    }
+            },
             { data, packet ->
                 packet.asType<CarTelemetryDataPacket> {
                     val carTelemetryData = it.data.items[it.header.playerCarIndex]
@@ -965,21 +1049,21 @@ class LiveData (
                 return@LiveDataField data
             },
             {
-                findViewById<TextView>(R.id.wearFLValue).also { view ->
-                    view.background = getDrawable(it.tyreFL.wearColor)
-                    view.text = it.tyreFL.wearValue
+                findViewById<TextView>(R.id.wearFLValue).apply {
+                    background = getDrawable(it.tyreFL.wearColor)
+                    text = it.tyreFL.wearValue
                 }
-                findViewById<TextView>(R.id.wearFRValue).also { view ->
-                    view.background = getDrawable(it.tyreFR.wearColor)
-                    view.text = it.tyreFR.wearValue
+                findViewById<TextView>(R.id.wearFRValue).apply {
+                    background = getDrawable(it.tyreFR.wearColor)
+                    text = it.tyreFR.wearValue
                 }
-                findViewById<TextView>(R.id.wearRLValue).also { view ->
-                    view.background = getDrawable(it.tyreRL.wearColor)
-                    view.text = it.tyreRL.wearValue
+                findViewById<TextView>(R.id.wearRLValue).apply {
+                    background = getDrawable(it.tyreRL.wearColor)
+                    text = it.tyreRL.wearValue
                 }
-                findViewById<TextView>(R.id.wearRRValue).also { view ->
-                    view.background = getDrawable(it.tyreRR.wearColor)
-                    view.text = it.tyreRR.wearValue
+                findViewById<TextView>(R.id.wearRRValue).apply {
+                    background = getDrawable(it.tyreRR.wearColor)
+                    text = it.tyreRR.wearValue
                 }
 
                 findViewById<View>(R.id.surfaceFLValue).background =
@@ -1003,7 +1087,14 @@ class LiveData (
         ),
         LiveDataField(
             "frontWing",
-            arrayOf(0, 0),
+            { arrayOf(0, 0) },
+            {
+                sequenceOf(R.id.frontWingLeftDamage, R.id.frontWingRightDamage).map { findViewById<TextView>(it) }
+                    .forEach {
+                        it.text = ""
+                        it.background = null
+                    }
+            },
             { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     return@LiveDataField arrayOf(
@@ -1021,20 +1112,26 @@ class LiveData (
                     frontLeftWingField.background = getDrawable(R.color.warn)
                 } else {
                     frontLeftWingField.text = ""
-                    frontLeftWingField.background = getDrawable(R.color.black)
+                    frontLeftWingField.background = null
                 }
                 if (it[1] > 0) {
                     frontRightWingField.text = it[1].toString()
                     frontRightWingField.background = getDrawable(R.color.warn)
                 } else {
                     frontRightWingField.text = ""
-                    frontRightWingField.background = getDrawable(R.color.black)
+                    frontRightWingField.background = null
                 }
             }
         ),
         LiveDataField(
             "rearWing",
-            0,
+            { 0 },
+            {
+                findViewById<TextView>(R.id.rearWingDamage).apply {
+                    text = ""
+                    background = null
+                }
+            },
             { data, packet ->
                 packet.asType<CarStatusDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].rearWingDamage.toInt()
@@ -1048,13 +1145,19 @@ class LiveData (
                     rearWingField.background = getDrawable(R.color.warn)
                 } else {
                     rearWingField.text = ""
-                    rearWingField.background = getDrawable(R.color.black)
+                    rearWingField.background = null
                 }
             }
         ),
         LiveDataField(
             "engine",
-            0,
+            { 0 },
+            {
+                findViewById<TextView>(R.id.engineTempValue).apply {
+                    text = "X"
+                    background = getDrawable(R.color.inop)
+                }
+            },
             { data, packet ->
                 packet.asType<CarTelemetryDataPacket> {
                     return@LiveDataField it.data.items[it.header.playerCarIndex].engineTemperature.toInt()
@@ -1082,7 +1185,10 @@ class LiveData (
         ),
         LiveDataField(
             "sessionTime",
-            -1,
+            { -1 },
+            {
+                findViewById<TextView>(R.id.sessionTimeValue).text = "XX:XX"
+            },
             { data, packet ->
                 packet.asType<SessionDataPacket> {
                     val timeLeft = it.data.sessionTimeLeft.toInt()
@@ -1101,7 +1207,10 @@ class LiveData (
         ),
         LiveDataField(
             "counter",
-            0,
+            { 0 },
+            {
+                findViewById<TextView>(R.id.debugFrameCount).text = "X"
+            },
             { data, _ -> data + 1 },
             {
                 if (it % 100 == 0) {
@@ -1138,6 +1247,10 @@ class LiveData (
         fields.iterator().forEach {
             it.onUpdate(viewProvider, packet)
         }
+    }
+
+    fun init() {
+        fields.forEach { it.init(viewProvider) }
     }
 
     override fun dispose() = compositeDisposable.dispose()

@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             setOnLongClickListener { toggleCapture(); true }
         }
 
-        liveData = LiveData(this)
+        liveData = LiveData(this).also { it.init() }
 
         serviceConnection = object : TelemetryProviderService.Connection {
 
