@@ -332,7 +332,7 @@ class LiveData (
                     .delay(1000, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { field ->
-                        if (field.tag == tag) field.background = getDrawable(R.color.black)
+                        if (field.tag == tag) field.background = null
                     }
                     .addTo(compositeDisposable)
             }
@@ -360,7 +360,7 @@ class LiveData (
                     .delay(1000, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { field ->
-                        if (field.tag == tag) field.background = getDrawable(R.color.black)
+                        if (field.tag == tag) field.background = null
                     }
                     .addTo(compositeDisposable)
             }
@@ -1221,6 +1221,8 @@ class LiveData (
         )
     )
 
+    private var sessionId: Long? = null
+
     private val views = HashMap<Int, View>()
     private val viewProvider = object : ViewProvider {
 
@@ -1244,16 +1246,24 @@ class LiveData (
     }
 
     fun onUpdate(packet: TelemetryPacket<*>) {
+        if (packet.header.sessionId != sessionId) {
+            sessionId = packet.header.sessionId
+            init()
+        }
         fields.iterator().forEach {
             it.onUpdate(viewProvider, packet)
         }
     }
 
-    fun init() {
-        fields.forEach { it.init(viewProvider) }
+    init {
+        init()
     }
 
     override fun dispose() = compositeDisposable.dispose()
 
     override fun isDisposed() = compositeDisposable.isDisposed
+
+    private fun init() {
+        fields.forEach { it.init(viewProvider) }
+    }
 }
