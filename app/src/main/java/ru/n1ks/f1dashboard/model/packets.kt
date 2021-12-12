@@ -1,6 +1,7 @@
 package ru.n1ks.f1dashboard.model
 
 import ru.n1ks.f1dashboard.Bytes
+import ru.n1ks.f1dashboard.toUnsignedInt
 
 interface TelemetryData
 
@@ -161,29 +162,29 @@ class LapData(
     /**  Current time around the lap in seconds */
     val currentLapTime: Float,
     /**  Sector 1 time in milliseconds */
-    val sector1TimeInMS: Short,
+    private val _sector1TimeInMS: Short,
     /**  Sector 2 time in milliseconds */
-    val sector2TimeInMS: Short,
+    private val _sector2TimeInMS: Short,
     /**  Best lap time of the session in seconds */
     val bestLapTime: Float,
     /**  Lap number best time achieved on */
     val bestLapNum: Byte,
     /**  Sector 1 time of best lap in the session in milliseconds */
-    val bestLapSector1TimeInMS: Short,
+    private val _bestLapSector1TimeInMS: Short,
     /**  Sector 2 time of best lap in the session in milliseconds */
-    val bestLapSector2TimeInMS: Short,
+    private val _bestLapSector2TimeInMS: Short,
     /**  Sector 3 time of best lap in the session in milliseconds */
-    val bestLapSector3TimeInMS: Short,
+    private val _bestLapSector3TimeInMS: Short,
     /**  Best overall sector 1 time of the session in milliseconds */
-    val bestOverallSector1TimeInMS: Short,
+    private val _bestOverallSector1TimeInMS: Short,
     /**  Lap number best overall sector 1 time achieved on */
     val bestOverallSector1LapNum: Byte,
     /**  Best overall sector 2 time of the session in milliseconds */
-    val bestOverallSector2TimeInMS: Short,
+    private val _bestOverallSector2TimeInMS: Short,
     /**  Lap number best overall sector 2 time achieved on */
-    val bestOverallSector2LapNum: Byte,
+    private val _bestOverallSector2LapNum: Byte,
     /**  Best overall sector 3 time of the session in milliseconds */
-    val bestOverallSector3TimeInMS: Short,
+    private val _bestOverallSector3TimeInMS: Short,
     /**  Lap number best overall sector 3 time achieved on */
     val bestOverallSector3LapNum: Byte,
     /**  Distance vehicle is around current lap in metres – could be negative if line hasn’t been crossed yet */
@@ -256,6 +257,21 @@ class LapData(
             6 -> ResultStatus.Retired
             else -> throw IllegalStateException("unknown status $_resultStatus")
         }
+
+    val sector1TimeInMS: Int
+        get() = _sector1TimeInMS.toUnsignedInt()
+
+    val sector2TimeInMS: Int
+        get() = _sector2TimeInMS.toUnsignedInt()
+
+    val bestLapSector1TimeInMS: Int
+        get() = _bestLapSector1TimeInMS.toUnsignedInt()
+
+    val bestLapSector2TimeInMS: Int
+        get() = _bestLapSector1TimeInMS.toUnsignedInt()
+
+    val bestLapSector3TimeInMS: Int
+        get() = _bestLapSector1TimeInMS.toUnsignedInt()
 }
 
 class LapDataPacket(

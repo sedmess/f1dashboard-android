@@ -126,20 +126,20 @@ data class TyreStateField(
 
 data class SectorsIndicatorField(
     val s1Pace: PaceIndicator = PaceIndicator.NotSet,
-    val s1Time: Short = 0,
+    val s1Time: Int = 0,
     val s2Pace: PaceIndicator = PaceIndicator.NotSet,
-    val s2Time: Short = 0,
+    val s2Time: Int = 0,
     val s3Pace: PaceIndicator = PaceIndicator.NotSet,
-    val s3Time: Short = 0
+    val s3Time: Int = 0
 ) {
 
-    fun setS1Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+    fun setS1Pace(pace: PaceIndicator, time: Int): SectorsIndicatorField =
         if (time == this.s1Time && pace == this.s1Pace) this else this.copy(s1Pace = pace, s1Time = time)
 
-    fun setS2Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+    fun setS2Pace(pace: PaceIndicator, time: Int): SectorsIndicatorField =
         if (time == this.s2Time && pace == this.s2Pace) this else this.copy(s2Pace = pace, s2Time = time)
 
-    fun setS3Pace(pace: PaceIndicator, time: Short): SectorsIndicatorField =
+    fun setS3Pace(pace: PaceIndicator, time: Int): SectorsIndicatorField =
         if (time == this.s3Time && pace == this.s3Pace) this else this.copy(s3Pace = pace, s3Time = time)
 }
 
@@ -394,7 +394,6 @@ class LiveData (
                         }
                         val s3Time =
                             (playerData.lastLapTime * 1000 - playerData.sector1TimeInMS - playerData.sector2TimeInMS).toInt()
-                                .toShort()
                         return@LiveDataField data.setS3Pace(if (s3Time <= playerData.bestLapSector3TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, s3Time)
                     }
                     if (playerData.sector == Bytes.One) {

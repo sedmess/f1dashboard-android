@@ -10,3 +10,5 @@ internal object Bytes {
 internal infix fun Byte.plusByte(increment: Byte): Byte = this.plus(increment).toByte()
 
 internal infix fun Byte.minusByte(decrement: Byte): Byte = this.minus(decrement).toByte()
+
+internal fun Short.toUnsignedInt(): Int = this.toInt() and 0xffff
