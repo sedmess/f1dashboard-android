@@ -397,10 +397,10 @@ class LiveData (
                         return@LiveDataField data.setS3Pace(if (s3Time <= playerData.bestLapSector3TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, s3Time)
                     }
                     if (playerData.sector == Bytes.One) {
-                        return@LiveDataField data.setS1Pace(if (playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector1TimeInMS).setS2Pace(PaceIndicator.NotSet, 0).setS3Pace(PaceIndicator.NotSet, 0)
+                        return@LiveDataField data.setS1Pace(if (playerData.bestLapSector1TimeInMS <= 0 || playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector1TimeInMS).setS2Pace(PaceIndicator.NotSet, 0).setS3Pace(PaceIndicator.NotSet, 0)
                     }
                     if (playerData.sector == Bytes.Two) {
-                        return@LiveDataField data.setS2Pace(if (playerData.sector2TimeInMS <= playerData.bestLapSector2TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector2TimeInMS).setS3Pace(PaceIndicator.NotSet, 0)
+                        return@LiveDataField data.setS2Pace(if (playerData.bestLapSector2TimeInMS <= 0 || playerData.sector2TimeInMS <= playerData.bestLapSector2TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector2TimeInMS).setS3Pace(PaceIndicator.NotSet, 0)
                     }
                 }
                 return@LiveDataField data
