@@ -56,7 +56,16 @@ data class Competitor(
     val areTyresNew: Boolean
         get() = tyreAge < 3
 
-    val tyreTypeValue: String
+    val typeDataValue: String
+        get() = tyreAge.toString() + tyreTypeValue
+
+
+    val tyreTyreColor: Int
+        get() = if (visualTyreType != TyreCompound.X) visualTyreType.color else actualTyreType.color
+
+    fun inBound(size: Int): Boolean = id in 0 until size
+
+    private val tyreTypeValue: String
         get() {
             return if (visualTyreType == actualTyreType) {
                 visualTyreType.char.toString()
@@ -64,15 +73,10 @@ data class Competitor(
                 when {
                     visualTyreType == TyreCompound.X -> actualTyreType.char.toString()
                     actualTyreType == TyreCompound.X -> visualTyreType.char.toString()
-                    else -> actualTyreType.char.toString() + visualTyreType.char.toString()
+                    else -> visualTyreType.char.toString()
                 }
             }
         }
-
-    val tyreTyreColor: Int
-        get() = if (visualTyreType != TyreCompound.X) visualTyreType.color else actualTyreType.color
-
-    fun inBound(size: Int): Boolean = id in 0 until size
 }
 
 data class TyreStateField(
@@ -732,7 +736,7 @@ class LiveData (
                             else -> aheadTimeField.setTextColor(getColor(R.color.white))
                         }
 
-                        aheadTyreField.text = context.ahead.tyreTypeValue
+                        aheadTyreField.text = context.ahead.typeDataValue
                         aheadTyreField.setTextColor(getColor(context.ahead.tyreTyreColor))
                         aheadTyreField.background =
                             if (context.ahead.areTyresNew) getDrawable(R.color.tyreNew) else null
@@ -767,7 +771,7 @@ class LiveData (
                             else -> ahead2TimeField.setTextColor(getColor(R.color.white))
                         }
 
-                        ahead2TyreField.text = context.ahead2.tyreTypeValue
+                        ahead2TyreField.text = context.ahead2.typeDataValue
                         ahead2TyreField.setTextColor(getColor(context.ahead2.tyreTyreColor))
                         ahead2TyreField.background =
                             if (context.ahead2.areTyresNew) getDrawable(R.color.tyreNew) else null
@@ -796,7 +800,7 @@ class LiveData (
                             playerLastTimeField.setTextColor(getColor(R.color.white))
                         }
 
-                        playerTyreField.text = context.player.tyreTypeValue
+                        playerTyreField.text = context.player.typeDataValue
                         playerTyreField.setTextColor(getColor(context.player.tyreTyreColor))
                         playerTyreField.background =
                             if (context.player.areTyresNew) getDrawable(R.color.tyreNew) else null
@@ -833,7 +837,7 @@ class LiveData (
                             }
                         }
 
-                        behindTyreFiled.text = context.behind.tyreTypeValue
+                        behindTyreFiled.text = context.behind.typeDataValue
                         behindTyreFiled.setTextColor(getColor(context.behind.tyreTyreColor))
                         behindTyreFiled.background =
                             if (context.behind.areTyresNew) getDrawable(R.color.tyreNew) else null
@@ -872,7 +876,7 @@ class LiveData (
                             }
                         }
 
-                        behind2TyreFiled.text = context.behind2.tyreTypeValue
+                        behind2TyreFiled.text = context.behind2.typeDataValue
                         behind2TyreFiled.setTextColor(getColor(context.behind2.tyreTyreColor))
                         behind2TyreFiled.background =
                             if (context.behind2.areTyresNew) getDrawable(R.color.tyreNew) else null
