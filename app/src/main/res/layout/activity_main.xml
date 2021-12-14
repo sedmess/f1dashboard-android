@@ -38,7 +38,6 @@
                     android:id="@+id/lapValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="+X"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -65,8 +64,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5sp"
-                    android:background="@color/inop"
-                    android:text="+X.XX"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -93,8 +90,6 @@
                     android:id="@+id/ersValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@color/inop"
-                    android:text="X"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -148,7 +143,6 @@
                     android:id="@+id/bbValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="X"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -175,7 +169,6 @@
                     android:id="@+id/diffValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="X"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -195,6 +188,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
                 android:layout_gravity="top"
+                android:layout_margin="4sp"
+                android:layout_weight="0.05"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/sector1Value"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
+                    />
+
+                <TextView
+                    android:id="@+id/sector2Value"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
+                    />
+
+                <TextView
+                    android:id="@+id/sector3Value"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.33"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/nanoFortSize"
+                    android:gravity="center"
+                    android:textAllCaps="true"
+                    android:typeface="monospace"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dip"
+                android:layout_gravity="top"
                 android:layout_margin="16sp"
                 android:layout_weight="0.15"
                 android:orientation="horizontal">
@@ -205,7 +244,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.2"
                     android:textSize="@dimen/largeFontSize"
-                    android:text=""
                     android:textColor="@color/leanMode"
                     android:textAlignment="center"
                     />
@@ -229,7 +267,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="0.5"
-                    android:text="-"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -254,11 +291,10 @@
                         android:layout_width="0dip"
                         android:layout_height="match_parent"
                         android:layout_weight="0.4"
-                        android:text="X"
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -267,7 +303,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.45"
-                        android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -281,7 +316,6 @@
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.15"
                         android:gravity="center"
-                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -300,11 +334,10 @@
                         android:layout_width="0dip"
                         android:layout_height="match_parent"
                         android:layout_weight="0.4"
-                        android:text="X"
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -313,7 +346,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.45"
-                        android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -327,7 +359,6 @@
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.15"
                         android:gravity="center"
-                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -343,11 +374,10 @@
                         android:layout_width="0dip"
                         android:layout_height="match_parent"
                         android:layout_weight="0.4"
-                        android:text="X:XX.XXX"
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -356,7 +386,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.45"
-                        android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -370,7 +399,6 @@
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.15"
                         android:gravity="center"
-                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -388,11 +416,10 @@
                         android:layout_width="0dip"
                         android:layout_height="match_parent"
                         android:layout_weight="0.40"
-                        android:text="X"
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -401,7 +428,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.45"
-                        android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -415,7 +441,6 @@
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.15"
                         android:gravity="center"
-                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -433,11 +458,10 @@
                         android:layout_width="0dip"
                         android:layout_height="match_parent"
                         android:layout_weight="0.4"
-                        android:text="X"
                         android:gravity="center_vertical"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace" />
 
                     <TextView
@@ -446,7 +470,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.45"
-                        android:text="X:XX.XXX"
                         android:textAlignment="textEnd"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
@@ -460,7 +483,6 @@
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.15"
                         android:gravity="center"
-                        android:text="X"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
                         android:textSize="@dimen/fontSize"
@@ -479,7 +501,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8sp"
                         android:layout_weight="0.5"
-                        android:text="X:XX.XXX"
                         android:textAlignment="center"
                         android:textAllCaps="true"
                         android:textColor="@color/fastestText"
@@ -493,14 +514,13 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dip"
-                android:layout_weight="0.2"
+                android:layout_weight="0.10"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/sessionTimeValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="@dimen/fontSize"
                     android:textAlignment="center"
                     android:textColor="@color/white"
                     />
@@ -509,7 +529,6 @@
                     android:id="@+id/debugFrameCount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="X"
                     android:textAlignment="center"
                     android:textColor="@color/white" />
 
@@ -540,7 +559,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.50"
                         android:layout_height="match_parent"
-                        android:background="@color/black"
                         android:layout_margin="2sp"
                         android:textSize="@dimen/fontSize"
                         android:textColor="@color/white"
@@ -552,7 +570,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.50"
                         android:layout_height="match_parent"
-                        android:background="@color/black"
                         android:layout_margin="2sp"
                         android:textSize="@dimen/fontSize"
                         android:textColor="@color/white"
@@ -572,13 +589,11 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.20"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
-                        android:text="X"
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
 
@@ -589,7 +604,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
 
@@ -600,7 +614,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
 
@@ -611,7 +624,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
 
@@ -622,7 +634,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
 
@@ -633,13 +644,11 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.20"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
-                        android:text="X"
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>
@@ -656,13 +665,11 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.20"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
-                        android:text="X"
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>
@@ -672,7 +679,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
                     </TextView>
@@ -682,7 +688,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
                     </TextView>
@@ -692,7 +697,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
                     </TextView>
@@ -702,7 +706,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.15"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
                         >
                     </TextView>
@@ -712,13 +715,11 @@
                         android:layout_width="0dip"
                         android:layout_weight="0.20"
                         android:layout_height="match_parent"
-                        android:background="@color/inop"
                         android:layout_margin="2sp"
-                        android:text="X"
                         android:gravity="center"
                         android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/smartFortSize"
+                        android:textSize="@dimen/smallFortSize"
                         android:typeface="monospace"
                         >
                     </TextView>
@@ -735,7 +736,6 @@
                         android:layout_width="0dip"
                         android:layout_weight="1"
                         android:layout_height="match_parent"
-                        android:background="@color/black"
                         android:layout_margin="2sp"
                         android:textSize="@dimen/fontSize"
                         android:textColor="@color/white"
@@ -755,8 +755,6 @@
                     android:id="@+id/engineTempValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/inop"
-                    android:text="X"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
@@ -769,7 +767,6 @@
                 android:id="@+id/systemTimeValue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="XX:XX"
                 android:textAlignment="center"
                 android:textAllCaps="true"
                 android:textColor="@color/shadowedWhite"

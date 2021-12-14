@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="fontSize">13pt</dimen>
-    <dimen name="smartFortSize">10pt</dimen>
+    <dimen name="nanoFortSize">5pt</dimen>
+    <dimen name="smallFortSize">10pt</dimen>
     <dimen name="largeFontSize">18pt</dimen>
 </resources>

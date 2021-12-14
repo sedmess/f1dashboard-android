@@ -9,6 +9,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="shadowedWhite">#4C4C4C</color>
     <color name="fastestText">#AA84FF</color>
+    <color name="fastestTime">#FF3700B3</color>
+    <color name="betterTime">#00FF00</color>
+    <color name="worseTime">#FFFF00</color>
     <color name="inop">#818181</color>
     <color name="warn">#8F3416</color>
     <color name="fastestMode">#FF3700B3</color>
