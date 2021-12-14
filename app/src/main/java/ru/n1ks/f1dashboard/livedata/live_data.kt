@@ -1055,18 +1055,22 @@ class LiveData (
                 findViewById<TextView>(R.id.wearFLValue).apply {
                     background = getDrawable(it.tyreFL.wearColor)
                     text = it.tyreFL.wearValue
+                    setTextColor(Colors.complimentColor(getColor(it.tyreFL.wearColor)))
                 }
                 findViewById<TextView>(R.id.wearFRValue).apply {
                     background = getDrawable(it.tyreFR.wearColor)
                     text = it.tyreFR.wearValue
+                    setTextColor(Colors.complimentColor(getColor(it.tyreFR.wearColor)))
                 }
                 findViewById<TextView>(R.id.wearRLValue).apply {
                     background = getDrawable(it.tyreRL.wearColor)
                     text = it.tyreRL.wearValue
+                    setTextColor(Colors.complimentColor(getColor(it.tyreRL.wearColor)))
                 }
                 findViewById<TextView>(R.id.wearRRValue).apply {
                     background = getDrawable(it.tyreRR.wearColor)
                     text = it.tyreRR.wearValue
+                    setTextColor(Colors.complimentColor(getColor(it.tyreRR.wearColor)))
                 }
 
                 findViewById<View>(R.id.surfaceFLValue).background =
