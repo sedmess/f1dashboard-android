@@ -47,7 +47,8 @@ data class Competitor(
     val visualTyreType: TyreCompound,
     val actualTyreType: TyreCompound,
     val tyreAge: Int,
-    val driver: CompetitorDriver?
+    val driver: CompetitorDriver?,
+    val drsAllowed: Boolean
 ) {
 
     val positionString: String
@@ -189,7 +190,10 @@ private val timeFormatter: (Float) -> String = {
     if (n1 == 0 && n2.absoluteValue < 0.001f) {
         timeNotSet
     } else {
-        "${n1}:${secondsAndMsFormat.format(n2)}"
+        if (n1 != 0)
+            "${n1}:${secondsAndMsFormat.format(n2)}"
+        else
+            secondsAndMsFormat.format(n2)
     }
 }
 
@@ -397,8 +401,8 @@ class LiveData (
                             return@LiveDataField data
                         }
                         val s3Time =
-                            (playerData.lastLapTime * 1000 - playerData.sector1TimeInMS - playerData.sector2TimeInMS).toInt()
-                        return@LiveDataField data.setS3Pace(if (s3Time <= playerData.bestLapSector3TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, s3Time)
+                            (playerData.lastLapTime * 1000 - data.s1Time - data.s2Time).toInt()
+                        return@LiveDataField data.setS3Pace(if (data.s3Time == 0 || s3Time <= playerData.bestLapSector3TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, s3Time)
                     }
                     if (playerData.sector == Bytes.One) {
                         return@LiveDataField data.setS1Pace(if (playerData.bestLapSector1TimeInMS <= 0 || playerData.sector1TimeInMS <= playerData.bestLapSector1TimeInMS) PaceIndicator.PersonalBest else PaceIndicator.Worse, playerData.sector1TimeInMS).setS2Pace(PaceIndicator.NotSet, 0).setS3Pace(PaceIndicator.NotSet, 0)
@@ -563,7 +567,8 @@ class LiveData (
                         visualTyreType = data.player?.visualTyreType ?: TyreCompound.X,
                         actualTyreType = data.player?.actualTyreType ?: TyreCompound.X,
                         tyreAge = data.player?.tyreAge ?: Int.MAX_VALUE,
-                        driver = null
+                        driver = null,
+                        drsAllowed = data.player?.drsAllowed ?: false
                     )
                     val ahead = rivalAheadData?.let {
                         Competitor(
@@ -575,7 +580,8 @@ class LiveData (
                             visualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.visualTyreType else TyreCompound.X,
                             actualTyreType = if (data.ahead?.id == rivalAheadIndex) data.ahead.actualTyreType else TyreCompound.X,
                             tyreAge = data.ahead?.tyreAge ?: Int.MAX_VALUE,
-                            driver = if (data.ahead?.id == rivalAheadIndex) data.ahead.driver else null
+                            driver = if (data.ahead?.id == rivalAheadIndex) data.ahead.driver else null,
+                            drsAllowed = data.ahead?.drsAllowed ?: false
                         )
                     }
                     val ahead2 = rivalAhead2Data?.let {
@@ -588,7 +594,8 @@ class LiveData (
                             visualTyreType = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.visualTyreType else TyreCompound.X,
                             actualTyreType = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.actualTyreType else TyreCompound.X,
                             tyreAge = data.ahead2?.tyreAge ?: Int.MAX_VALUE,
-                            driver = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.driver else null
+                            driver = if (data.ahead2?.id == rivalAhead2Index) data.ahead2.driver else null,
+                            drsAllowed = data.ahead2?.drsAllowed ?: false
                         )
                     }
                     val behind = rivalBehindData?.let {
@@ -601,7 +608,8 @@ class LiveData (
                             visualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.visualTyreType else TyreCompound.X,
                             actualTyreType = if (data.behind?.id == rivalBehindIndex) data.behind.actualTyreType else TyreCompound.X,
                             tyreAge = data.behind?.tyreAge ?: Int.MAX_VALUE,
-                            driver = if (data.behind?.id == rivalBehindIndex) data.behind.driver else null
+                            driver = if (data.behind?.id == rivalBehindIndex) data.behind.driver else null,
+                            drsAllowed = data.behind?.drsAllowed ?: false
                         )
                     }
                     val behind2 = rivalBehind2Data?.let {
@@ -614,7 +622,8 @@ class LiveData (
                             visualTyreType = if (data.behind2?.id == rivalBehind2Index) data.behind2.visualTyreType else TyreCompound.X,
                             actualTyreType = if (data.behind2?.id == rivalBehind2Index) data.behind2.actualTyreType else TyreCompound.X,
                             tyreAge = data.behind2?.tyreAge ?: Int.MAX_VALUE,
-                            driver = if (data.behind2?.id == rivalBehind2Index) data.behind2.driver else null
+                            driver = if (data.behind2?.id == rivalBehind2Index) data.behind2.driver else null,
+                            drsAllowed = data.behind2?.drsAllowed ?: false
                         )
                     }
                     return@LiveDataField RivalsField(ahead2, ahead, player, behind, behind2)
@@ -670,7 +679,8 @@ class LiveData (
                             player = data.player.copy(
                                 visualTyreType = it.data.items[data.player.id].visualTyreCompound,
                                 actualTyreType = it.data.items[data.player.id].actualTyreCompound,
-                                tyreAge = it.data.items[data.player.id].tyresAgeLaps.toInt()
+                                tyreAge = it.data.items[data.player.id].tyresAgeLaps.toInt(),
+                                drsAllowed = it.data.items[data.player.id].drsAvailable
                             )
                         )
                     }
@@ -679,7 +689,8 @@ class LiveData (
                             ahead = data.ahead.copy(
                                 visualTyreType = it.data.items[data.ahead.id].visualTyreCompound,
                                 actualTyreType = it.data.items[data.ahead.id].actualTyreCompound,
-                                tyreAge = it.data.items[data.ahead.id].tyresAgeLaps.toInt()
+                                tyreAge = it.data.items[data.ahead.id].tyresAgeLaps.toInt(),
+                                drsAllowed = it.data.items[data.ahead.id].drsAvailable
                             )
                         )
                     }
@@ -688,7 +699,8 @@ class LiveData (
                             ahead2 = data.ahead2.copy(
                                 visualTyreType = it.data.items[data.ahead2.id].visualTyreCompound,
                                 actualTyreType = it.data.items[data.ahead2.id].actualTyreCompound,
-                                tyreAge = it.data.items[data.ahead2.id].tyresAgeLaps.toInt()
+                                tyreAge = it.data.items[data.ahead2.id].tyresAgeLaps.toInt(),
+                                drsAllowed = it.data.items[data.ahead2.id].drsAvailable
                             )
                         )
                     }
@@ -697,7 +709,8 @@ class LiveData (
                             behind = data.behind.copy(
                                 visualTyreType = it.data.items[data.behind.id].visualTyreCompound,
                                 actualTyreType = it.data.items[data.behind.id].actualTyreCompound,
-                                tyreAge = it.data.items[data.behind.id].tyresAgeLaps.toInt()
+                                tyreAge = it.data.items[data.behind.id].tyresAgeLaps.toInt(),
+                                drsAllowed = it.data.items[data.behind.id].drsAvailable
                             )
                         )
                     }
@@ -706,7 +719,8 @@ class LiveData (
                             behind2 = data.behind2.copy(
                                 visualTyreType = it.data.items[data.behind2.id].visualTyreCompound,
                                 actualTyreType = it.data.items[data.behind2.id].actualTyreCompound,
-                                tyreAge = it.data.items[data.behind2.id].tyresAgeLaps.toInt()
+                                tyreAge = it.data.items[data.behind2.id].tyresAgeLaps.toInt(),
+                                drsAllowed = it.data.items[data.behind2.id].drsAvailable
                             )
                         )
                     }
@@ -723,6 +737,7 @@ class LiveData (
                     if (context.ahead != null && context.ahead.position > 0) {
                         aheadDriverField.text =
                             context.ahead.positionString + context.ahead.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                        aheadDriverField.background = if (context.ahead.drsAllowed) getDrawable(R.color.attentionBg) else null
                         aheadTimeField.text =
                             timeFormatter(context.ahead.lastLapTime)
 
@@ -739,7 +754,7 @@ class LiveData (
                         aheadTyreField.text = context.ahead.typeDataValue
                         aheadTyreField.setTextColor(getColor(context.ahead.tyreTyreColor))
                         aheadTyreField.background =
-                            if (context.ahead.areTyresNew) getDrawable(R.color.tyreNew) else null
+                            if (context.ahead.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         aheadDriverField.text = "X"
                         aheadTimeField.text = timeNotSet
@@ -758,6 +773,7 @@ class LiveData (
                     if (context.ahead2 != null && context.ahead2.position > 0) {
                         ahead2DriverField.text =
                             context.ahead2.positionString + context.ahead2.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                        ahead2DriverField.background = if (context.ahead2.drsAllowed) getDrawable(R.color.attentionBg) else null
                         ahead2TimeField.text =
                             timeFormatter(context.ahead2.lastLapTime)
 
@@ -774,7 +790,7 @@ class LiveData (
                         ahead2TyreField.text = context.ahead2.typeDataValue
                         ahead2TyreField.setTextColor(getColor(context.ahead2.tyreTyreColor))
                         ahead2TyreField.background =
-                            if (context.ahead2.areTyresNew) getDrawable(R.color.tyreNew) else null
+                            if (context.ahead2.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         ahead2DriverField.text = "X"
                         ahead2TimeField.text = timeNotSet
@@ -803,7 +819,7 @@ class LiveData (
                         playerTyreField.text = context.player.typeDataValue
                         playerTyreField.setTextColor(getColor(context.player.tyreTyreColor))
                         playerTyreField.background =
-                            if (context.player.areTyresNew) getDrawable(R.color.tyreNew) else null
+                            if (context.player.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         playerBestTimeField.text = timeNotSet
                         playerLastTimeField.text = timeNotSet
@@ -821,6 +837,7 @@ class LiveData (
                     if (context.behind != null) {
                         behindDriverField.text =
                             context.behind.positionString + context.behind.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                        behindDriverField.background = if (context.behind.drsAllowed) getDrawable(R.color.attentionBg) else null
                         behindTimeField.text = timeFormatter(context.behind.lastLapTime)
 
                         if (context.behind.lap < context.player?.lap ?: context.behind.lap) {
@@ -840,7 +857,7 @@ class LiveData (
                         behindTyreFiled.text = context.behind.typeDataValue
                         behindTyreFiled.setTextColor(getColor(context.behind.tyreTyreColor))
                         behindTyreFiled.background =
-                            if (context.behind.areTyresNew) getDrawable(R.color.tyreNew) else null
+                            if (context.behind.areTyresNew) getDrawable(R.color.attentionBg) else null
 
                     } else {
                         behindDriverField.text = "X"
@@ -860,6 +877,7 @@ class LiveData (
                     if (context.behind2 != null) {
                         behind2DriverField.text =
                             context.behind2.positionString + context.behind2.driver.let { if (it != null) " ${it.driver.name}" else "" }
+                        behind2DriverField.background = if (context.behind2.drsAllowed) getDrawable(R.color.attentionBg) else null
                         behind2TimeField.text = timeFormatter(context.behind2.lastLapTime)
 
                         if (context.behind2.lap < context.player?.lap ?: context.behind2.lap) {
@@ -879,7 +897,7 @@ class LiveData (
                         behind2TyreFiled.text = context.behind2.typeDataValue
                         behind2TyreFiled.setTextColor(getColor(context.behind2.tyreTyreColor))
                         behind2TyreFiled.background =
-                            if (context.behind2.areTyresNew) getDrawable(R.color.tyreNew) else null
+                            if (context.behind2.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         behind2DriverField.text = "X"
                         behind2TimeField.text = timeNotSet
