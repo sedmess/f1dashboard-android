@@ -3,8 +3,10 @@ package ru.n1ks.f1dashboard.livedata
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.drawable.Drawable
+import android.speech.tts.TextToSpeech
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -14,7 +16,9 @@ import io.reactivex.rxkotlin.addTo
 import ru.n1ks.f1dashboard.*
 import ru.n1ks.f1dashboard.model.*
 import java.text.DecimalFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
 import kotlin.math.absoluteValue
 
 
@@ -23,6 +27,7 @@ interface ViewProvider {
     fun <T : View> findViewById(id: Int): T
     fun getDrawable(id: Int): Drawable
     fun getColor(id: Int): Int
+    fun tryToSpeak(text: String)
 }
 
 enum class DrsCommonState {
@@ -202,6 +207,45 @@ class LiveData (
 ) : Disposable {
 
     private val compositeDisposable = CompositeDisposable()
+
+    private val ttsProvider = object : () -> TextToSpeech? {
+
+        private var ttsReady = false
+        private val textToSpeech: TextToSpeech = TextToSpeech(activity) { initStatus ->
+            if (initStatus == TextToSpeech.SUCCESS && initTTS()) {
+                ttsReady = true
+            } else {
+                Toast.makeText(activity, R.string.msg_tts_unavailable, Toast.LENGTH_SHORT)
+            }
+        }
+
+        init {
+            compositeDisposable.add(object : Disposable {
+
+                override fun dispose() = textToSpeech.shutdown()
+
+                override fun isDisposed(): Boolean = false
+            })
+        }
+
+        override fun invoke(): TextToSpeech? =
+            if (ttsReady) {
+                textToSpeech
+            } else {
+                null
+            }
+
+        private fun initTTS(): Boolean {
+            return if (textToSpeech.isLanguageAvailable(Locale.US) != TextToSpeech.LANG_NOT_SUPPORTED) {
+                textToSpeech.language = Locale.US
+                textToSpeech.setPitch(1f)
+                textToSpeech.setSpeechRate(1.5f)
+                true
+            } else {
+                false
+            }
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     private val fields = listOf<LiveDataField<*>>(
@@ -434,6 +478,18 @@ class LiveData (
             {
                 val recommendedGearField = findViewById<TextView>(R.id.recommendedGearValue)
                 recommendedGearField.text = ""
+                recommendedGearField.background = null
+                recommendedGearField.setTag(R.string.tag_tts, false)
+                recommendedGearField.setOnClickListener {
+                    val tag = recommendedGearField.getTag(R.string.tag_tts) as Boolean
+                    if (tag) {
+                        recommendedGearField.background = null
+                        recommendedGearField.setTag(R.string.tag_tts, false)
+                    } else {
+                        recommendedGearField.background = getDrawable(R.color.attentionBg)
+                        recommendedGearField.setTag(R.string.tag_tts, true)
+                    }
+                }
             },
             { data, packet ->
                 packet.asType<CarTelemetryDataPacket> {
@@ -445,6 +501,9 @@ class LiveData (
                 val recommendedGearField = findViewById<TextView>(R.id.recommendedGearValue)
                 if (it > 0) {
                     recommendedGearField.text = it.toString()
+                    if (recommendedGearField.getTag(R.string.tag_tts) as Boolean) {
+                        tryToSpeak(it.toString())
+                    }
                 } else {
                     recommendedGearField.text = ""
                 }
@@ -1268,6 +1327,10 @@ class LiveData (
 
         override fun getColor(id: Int): Int =
             ContextCompat.getColor(activity, id)
+
+        override fun tryToSpeak(text: String) {
+            ttsProvider()?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UUID.randomUUID().toString())
+        }
     }
 
     fun onUpdate(packet: TelemetryPacket<*>) {

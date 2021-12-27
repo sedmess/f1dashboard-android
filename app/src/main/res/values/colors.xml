@@ -52,6 +52,6 @@
     <color name="tyreM">#FFFFFF</color>
     <color name="tyreH">#FF8F00</color>
     <color name="attentionBg">#AE00BCD4</color>
-    <color name="recoring">#8F3416</color>
+    <color name="recording">#8F3416</color>
     <color name="replaying">#467127</color>
 </resources>

@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             setOnLongClickListener { toggleCapture(); true }
         }
 
-        liveData = LiveData(this)
+        liveData = LiveData(this).also { it.addTo(compositeDisposable) }
 
         serviceConnection = object : TelemetryProviderService.Connection {
 
@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity() {
         val service = serviceConnection.service()
         if (service is Recorder) {
             service.startRecording()
-            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.recoring)
+            debugFrameCountTextView.background = ContextCompat.getDrawable(this, R.color.recording)
             state = State.ListenRecording
         } else {
             Toast.makeText(this, "Can't start recording", Toast.LENGTH_SHORT).show()
