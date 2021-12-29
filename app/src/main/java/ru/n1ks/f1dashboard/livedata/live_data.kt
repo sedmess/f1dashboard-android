@@ -586,6 +586,7 @@ class LiveData (
                 sequenceOf(R.id.aheadDriverValue, R.id.ahead2DriverValue, R.id.behindDriverValue, R.id.behind2DriverValue).map { findViewById<TextView>(it) }
                     .forEach {
                         it.text = "X"
+                        it.background = null
                     }
                 sequenceOf(R.id.myTimeValue, R.id.aheadTimeValue, R.id.ahead2TimeValue, R.id.behindTimeValue, R.id.behind2TimeValue).map { findViewById<TextView>(it) }
                     .forEach {
@@ -816,6 +817,7 @@ class LiveData (
                             if (context.ahead.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         aheadDriverField.text = "X"
+                        aheadDriverField.background = null
                         aheadTimeField.text = timeNotSet
                         aheadTimeField.setTextColor(getColor(R.color.white))
                         aheadTyreField.text = "X"
@@ -852,6 +854,7 @@ class LiveData (
                             if (context.ahead2.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         ahead2DriverField.text = "X"
+                        ahead2DriverField.background = null
                         ahead2TimeField.text = timeNotSet
                         ahead2TimeField.setTextColor(getColor(R.color.white))
                         ahead2TyreField.text = "X"
@@ -920,6 +923,7 @@ class LiveData (
 
                     } else {
                         behindDriverField.text = "X"
+                        behindDriverField.background = null
                         behindTimeField.text = timeNotSet
                         behindTimeField.setTextColor(getColor(R.color.white))
                         behindTyreFiled.text = "X"
@@ -959,6 +963,7 @@ class LiveData (
                             if (context.behind2.areTyresNew) getDrawable(R.color.attentionBg) else null
                     } else {
                         behind2DriverField.text = "X"
+                        behind2DriverField.background = null
                         behind2TimeField.text = timeNotSet
                         behind2TimeField.setTextColor(getColor(R.color.white))
                         behind2TyreFiled.text = "X"
